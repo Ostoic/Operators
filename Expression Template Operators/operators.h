@@ -60,10 +60,13 @@ namespace agac {
 
 			// This is where the binary operation is actually performed
 			// We require the accessor to be overridden by an Operator class.
-			// Example: return _lhs[i] op _rhs[i];
+			// Example: return op(_element[i])
 			virtual ReturnType operator [] (std::size_t) const = 0;
 		};
 
+		// Note: When we define a unary expression, we use the using directive to 
+		// ensure the default function to be used. Otherwise, ADL will (hopefully) take care of 
+		// the proper lookup.
 		namespace operators
 		{
 			namespace binary
