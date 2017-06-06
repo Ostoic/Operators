@@ -130,7 +130,7 @@ namespace agac {
 					return Quotient<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
 				}
 			}
-		
+
 			namespace unary
 			{
 				/*************************************/
@@ -149,10 +149,10 @@ namespace agac {
 				{
 				public:
 					Log(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override 
-					{ 
+					virtual ReturnType operator [] (std::size_t i) const override
+					{
 						using std::log;
-						return log(_element[i]); 
+						return log(_element[i]);
 					}
 				};
 
@@ -161,10 +161,10 @@ namespace agac {
 				{
 				public:
 					Sin(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override 
-					{ 
+					virtual ReturnType operator [] (std::size_t i) const override
+					{
 						using std::sin;
-						return sin(_element[i]); 
+						return sin(_element[i]);
 					}
 				};
 
@@ -173,8 +173,8 @@ namespace agac {
 				{
 				public:
 					Cos(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override 
-					{ 
+					virtual ReturnType operator [] (std::size_t i) const override
+					{
 						using std::cos;
 						return cos(_element[i]);
 					}
@@ -185,10 +185,10 @@ namespace agac {
 				{
 				public:
 					Tan(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override 
-					{ 
+					virtual ReturnType operator [] (std::size_t i) const override
+					{
 						using std::tan;
-						return tan(_element[i]); 
+						return tan(_element[i]);
 					}
 				};
 
@@ -196,99 +196,99 @@ namespace agac {
 				/** Operator Overloads **/
 				/***********************/
 				template <typename E>
-				const Negate<typename E::value_type, E> operator - (const E& val)
+				const Negate<typename E::value_type, E> operator - (const E& vec)
 				{
-					return Negate<typename E::value_type, E>(val);
+					return Negate<typename E::value_type, E>(vec);
 				}
 
 				template <typename E>
-				const Cos<typename E::value_type, E> cos(const E& val)
+				const Cos<typename E::value_type, E> cos(const E& vec)
 				{
-					return Cos<typename E::value_type, E>(val);
+					return Cos<typename E::value_type, E>(vec);
 				}
 
 				template <typename E>
-				const Sin<typename E::value_type, E> sin(const E& val)
+				const Sin<typename E::value_type, E> sin(const E& vec)
 				{
-					return Sin<typename E::value_type, E>(val);
+					return Sin<typename E::value_type, E>(vec);
 				}
 
 				template <typename E>
-				const Tan<typename E::value_type, E> tan(const E& val)
+				const Tan<typename E::value_type, E> tan(const E& vec)
 				{
-					return Tan<typename E::value_type, E>(val);
+					return Tan<typename E::value_type, E>(vec);
 				}
 
 				template <typename E>
-				const Log<typename E::value_type, E> log(const E& val)
+				const Log<typename E::value_type, E> log(const E& vec)
 				{
-					return Log<typename E::value_type, E>(val);
+					return Log<typename E::value_type, E>(vec);
 				}
 			}
-		
+
 			namespace scalar
 			{
-				/*************************************/
-				/** Expression Type Specializations **/
-				/*************************************/
-				template <typename ReturnType, typename LeftType, typename RightType>
-				class Sum : public Binary<ReturnType, LeftType, RightType>
-				{
-				public:
-					Sum(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] + _rhs[i]; }
-				};
+			//	/*************************************/
+			//	/** Expression Type Specializations **/
+			//	/*************************************/
+			//	template <typename ReturnType, typename LeftType, typename RightType>
+			//	class Sum : public Binary<ReturnType, LeftType, RightType>
+			//	{
+			//	public:
+			//		Sum(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+			//		virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] + _rhs[i]; }
+			//	};
 
-				template <typename ReturnType, typename LeftType, typename RightType>
-				class Difference : public Binary<ReturnType, LeftType, RightType>
-				{
-				public:
-					Difference(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] - _rhs[i]; }
-				};
+			//	template <typename ReturnType, typename LeftType, typename RightType>
+			//	class Difference : public Binary<ReturnType, LeftType, RightType>
+			//	{
+			//	public:
+			//		Difference(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+			//		virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] - _rhs[i]; }
+			//	};
 
-				template <typename ReturnType, typename LeftType, typename RightType>
-				class Product : public Binary<ReturnType, LeftType, RightType>
-				{
-				public:
-					Product(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] * _rhs[i]; }
-				};
+			//	template <typename ReturnType, typename LeftType, typename RightType>
+			//	class Product : public Binary<ReturnType, LeftType, RightType>
+			//	{
+			//	public:
+			//		Product(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+			//		virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] * _rhs[i]; }
+			//	};
 
-				template <typename ReturnType, typename LeftType, typename RightType>
-				class Quotient : public Binary<ReturnType, LeftType, RightType>
-				{
-				public:
-					Quotient(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] / _rhs[i]; }
-				};
+			//	template <typename ReturnType, typename LeftType, typename RightType>
+			//	class Quotient : public Binary<ReturnType, LeftType, RightType>
+			//	{
+			//	public:
+			//		Quotient(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+			//		virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] / _rhs[i]; }
+			//	};
 
-				/************************/
-				/** Operator Overloads **/
-				/************************/
-				template <typename LeftType, typename RightType>
-				const Sum<typename LeftType::value_type, LeftType, RightType> operator + (const LeftType& lhs, const RightType& rhs)
-				{
-					return Sum<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
-				}
+			//	/************************/
+			//	/** Operator Overloads **/
+			//	/************************/
+			//	template <typename LeftType, typename RightType>
+			//	const Sum<typename LeftType::value_type, LeftType, RightType> operator + (const LeftType& lhs, const RightType& rhs)
+			//	{
+			//		return Sum<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+			//	}
 
-				template <typename LeftType, typename RightType>
-				const Difference<typename LeftType::value_type, LeftType, RightType> operator - (const LeftType& lhs, const RightType& rhs)
-				{
-					return Difference<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
-				}
+			//	template <typename LeftType, typename RightType>
+			//	const Difference<typename LeftType::value_type, LeftType, RightType> operator - (const LeftType& lhs, const RightType& rhs)
+			//	{
+			//		return Difference<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+			//	}
 
-				template <typename LeftType, typename RightType>
-				const Product<typename LeftType::value_type, LeftType, RightType> operator * (const LeftType& lhs, const RightType& rhs)
-				{
-					return Product<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
-				}
+			//	template <typename LeftType, typename RightType>
+			//	const Product<typename LeftType::value_type, LeftType, RightType> operator * (const LeftType& lhs, const RightType& rhs)
+			//	{
+			//		return Product<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+			//	}
 
-				template <typename LeftType, typename RightType>
-				const Quotient<typename LeftType::value_type, LeftType, RightType> operator / (const LeftType& lhs, const RightType& rhs)
-				{
-					return Quotient<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
-				}
+			//	template <typename LeftType, typename RightType>
+			//	const Quotient<typename LeftType::value_type, LeftType, RightType> operator / (const LeftType& lhs, const RightType& rhs)
+			//	{
+			//		return Quotient<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+			//	}
 			}
 		}
 	}

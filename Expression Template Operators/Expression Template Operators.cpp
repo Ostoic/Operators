@@ -3,28 +3,130 @@
 
 #include <iostream>
 
+#include <Stopwatch.h>
+#include <RuntimeTest.h>
+#include <Algebra\Vector_Operators.h>
+
 #include "operators.h"
 #include "Vec.h"
 
+Vec<double> custom_result;
+std::vector<double> std_result;
+
 using std::endl;
 
-int main()
+template <typename V>
+long long test(const V* _x, const V* _y)
+{
+	using namespace vector_operators::vector;
+	using namespace agac::expressions::operators::binary;
+	using namespace agac::expressions::operators::unary;
+
+	Stopwatch timer;
+
+	const std::size_t N = _x->size();
+
+	const V& x = *_x;
+	const V& y = *_y;
+
+	timer.start();
+	const V result = x*x + y - x*y;
+	timer.stop();
+
+	//std_result = result;
+	return timer.nanoseconds();
+}
+
+template <typename V>
+long long test_Custom(const V* _x, const V* _y)
 {
 	using namespace agac::expressions::operators::binary;
 	using namespace agac::expressions::operators::unary;
 
+	Stopwatch timer;
+
+	const std::size_t N = _x->size();
+
+	const V& x = *_x;
+	const V& y = *_y;
+
+	timer.start();
+	const V result = x*x + y - x*y;
+	timer.stop();
+
+	custom_result = result;
+	return timer.nanoseconds();
+}
+
+template <typename V>
+long long test_Loop(const V* _x, const V* _y)
+{
+	typedef V::value_type T;
+	Stopwatch timer;
+
+	const std::size_t N = _x->size();
+
+	const V& x = *_x;
+	const V& y = *_y;
+
+	timer.start();
+	T* result = new T[N];
+	for (unsigned int j = 0; j < N; j++)
+		result[j] = x[j] * x[j] + y[j] - x[j] * y[j];
+
+	timer.stop();
+
+	delete[] result;
+	return timer.nanoseconds();
+}
+
+template <typename V>
+void setup(const std::size_t N, V* x, V* y)
+{
+	typedef V::value_type T;
+
+	x->resize(N);
+	y->resize(N);
+
+	x->assign(N, -1);
+	y->assign(N, 3.1);
+}
+
+int main()
+{
 	typedef double T;
-	Vec<T> a(4), b(4), c(4);
 
-	a.assign(3, -1);
-	b.assign(3, 0);
-	c.assign(3, 1);
+	std::vector<std::size_t> sizes = {
+		static_cast<std::size_t>(1e2),
+		static_cast<std::size_t>(2e3),
+		static_cast<std::size_t>(3e4),
+		static_cast<std::size_t>(4e5),
+		static_cast<std::size_t>(1e6),
+	};
 
-	//Vec<T> x = a + b + c;
-	Vec<T> y = 2 * a;
+	const std::size_t N = 1e6;
 
-	//std::cout << x[0] << endl;
-	std::cout << y[0] << endl;
+	std::vector<T> x, y;
+	Vec<T> c_x, c_y;
+
+	using namespace agac::expressions::operators::binary;
+	using namespace agac::expressions::operators::unary;
+	using namespace vector_operators::vector;
+	
+	
+	RuntimeTest custom(sizes), std(sizes);
+	custom.storeSetup(setup<Vec<T>>, &c_x, &c_y);
+	custom.storeTest("Operators_Custom_times.txt", test<Vec<T>>, &c_x, &c_y);
+	custom.runAll(10);
+	custom.save();
+
+	std.storeSetup(setup<std::vector<T>>, &x, &y);
+	std.storeTest("Operators_STD_times.txt", test<std::vector<T>>, &x, &y);
+	std.storeTest("Operators_Loop_times.txt", test_Loop<std::vector<T>>, &x, &y);
+	std.runAll(10);
+	std.save();
+
+	std::cout << "Answers are equal: " << std::to_string(std_result == custom_result) << endl;
 	return 0;
 }
 
