@@ -15,7 +15,7 @@ public:
 	T& operator [] (const std::size_t i)	   { return elements[i]; }
 	std::size_t size()					 const { return elements.size(); }
 
-	void assign(std::size_t count, T element)  { return elements.assign(count, element); }
+	void assign(std::size_t count, const T& element)  { return elements.assign(count, element); }
 
 	// Preallocate template
 	Vec(std::size_t n) : elements(n) {}
