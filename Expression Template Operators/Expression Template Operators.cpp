@@ -21,7 +21,7 @@ int main()
 	c.assign(3, 1);
 
 	//Vec<T> x = a + b + c;
-	Vec<T> y = -a + c;
+	Vec<T> y = 2 * a;
 
 	//std::cout << x[0] << endl;
 	std::cout << y[0] << endl;
