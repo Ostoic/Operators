@@ -38,27 +38,6 @@ long long test(const V* _x, const V* _y)
 }
 
 template <typename V>
-long long test_Custom(const V* _x, const V* _y)
-{
-	using namespace agac::expressions::operators::binary;
-	using namespace agac::expressions::operators::unary;
-
-	Stopwatch timer;
-
-	const std::size_t N = _x->size();
-
-	const V& x = *_x;
-	const V& y = *_y;
-
-	timer.start();
-	const V result = x*x + y - x*y;
-	timer.stop();
-
-	custom_result = result;
-	return timer.nanoseconds();
-}
-
-template <typename V>
 long long test_Loop(const V* _x, const V* _y)
 {
 	typedef V::value_type T;
@@ -109,11 +88,6 @@ int main()
 	std::vector<T> x, y;
 	Vec<T> c_x, c_y;
 
-	using namespace agac::expressions::operators::binary;
-	using namespace agac::expressions::operators::unary;
-	using namespace vector_operators::vector;
-	
-	
 	RuntimeTest custom(sizes), std(sizes);
 	custom.storeSetup(setup<Vec<T>>, &c_x, &c_y);
 	custom.storeTest("Operators_Custom_times.txt", test<Vec<T>>, &c_x, &c_y);
