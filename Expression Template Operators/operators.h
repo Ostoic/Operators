@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 namespace agac {
 	namespace expressions
 	{
@@ -10,12 +12,12 @@ namespace agac {
 			// Save the return type of the expression
 			typedef ReturnType value_type;
 
-			// Casts to const T&, calling  the overload below.
+			// Casts *this to underlying expression type, then calls [] operator in
+			// Binary/Unary/N-ary derived class
 			ReturnType operator [] (std::size_t i) const { return static_cast<const E&>(*this)[i]; }
 			std::size_t size()					   const { return static_cast<const E&>(*this).size(); }
 
-			// These type conversion operators should implicitly call the constructor for type T with parameter *this, 
-			// of type Expression.
+			// Provides implicit (or C-style) cast to expression type
 			operator E& ()			    { return static_cast<E&>(*this); }
 			operator const E& () const  { return static_cast<const E&>(*this); }
 		};
@@ -37,57 +39,192 @@ namespace agac {
 
 			// This is where the binary operation is actually performed
 			// We require the accessor to be overridden by an Operator class.
+			// Example: _lhs[i] + rhs[i]
+			virtual ReturnType operator [] (std::size_t) const = 0;
+		};
+
+		// Holds the unary expression of a single object
+		// Example: element[i]
+		// Example: log(element[i])
+		template <
+			typename ReturnType,
+			typename Type>
+		class Unary : public Expression<ReturnType, Unary<ReturnType, Type>>
+		{
+		protected:
+			const Type& _element;
+
+		public:
+			Unary(const Type& element) : _element(element) {}
+			std::size_t size() const { return _element.size(); }
+
+			// This is where the binary operation is actually performed
+			// We require the accessor to be overridden by an Operator class.
 			// Example: return _lhs[i] op _rhs[i];
 			virtual ReturnType operator [] (std::size_t) const = 0;
 		};
 
-		//template <typename ReturnType, typename C>
-		//class Unary : public Expression<ReturnType, Unary, C>
-		//{
-		//private:
-		//	const C& _val;
-
-		//public:
-		//	Unary(const C& val) : _val(rhs) {}
-		//	std::size_t size() { return _val.size(); }
-
-		//	// This member function is where the binary operation is actually performed
-		//	virtual ReturnType operator [] (std::size_t) const = 0;
-		//};
-
-		template <typename ReturnType, typename LeftType, typename RightType>
-		class Sum : public Binary<ReturnType, LeftType, RightType>
+		namespace operators
 		{
-		public:
-			Sum(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-			virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] + _rhs[i]; }
-		};
+			namespace binary
+			{
+				/*************************************/
+				/** Expression Type Specializations **/
+				/*************************************/
+				template <typename ReturnType, typename LeftType, typename RightType>
+				class Sum : public Binary<ReturnType, LeftType, RightType>
+				{
+				public:
+					Sum(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] + _rhs[i]; }
+				};
 
-		template <typename E1, typename E2>
-		const Sum<E1::value_type, E1, E2> operator + (const E1& lhs, const E2& rhs)
-		{
-			return Sum<E1::value_type, E1, E2>(lhs, rhs);
+				template <typename ReturnType, typename LeftType, typename RightType>
+				class Difference : public Binary<ReturnType, LeftType, RightType>
+				{
+				public:
+					Difference(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] - _rhs[i]; }
+				};
+
+				template <typename ReturnType, typename LeftType, typename RightType>
+				class Product : public Binary<ReturnType, LeftType, RightType>
+				{
+				public:
+					Product(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] * _rhs[i]; }
+				};
+
+				template <typename ReturnType, typename LeftType, typename RightType>
+				class Quotient : public Binary<ReturnType, LeftType, RightType>
+				{
+				public:
+					Quotient(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] / _rhs[i]; }
+				};
+
+				/************************/
+				/** Operator Overloads **/
+				/************************/
+				template <typename LeftType, typename RightType>
+				const Sum<typename LeftType::value_type, LeftType, RightType> operator + (const LeftType& lhs, const RightType& rhs)
+				{
+					return Sum<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+				}
+
+				template <typename LeftType, typename RightType>
+				const Difference<typename LeftType::value_type, LeftType, RightType> operator - (const LeftType& lhs, const RightType& rhs)
+				{
+					return Difference<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+				}
+
+				template <typename LeftType, typename RightType>
+				const Product<typename LeftType::value_type, LeftType, RightType> operator * (const LeftType& lhs, const RightType& rhs)
+				{
+					return Product<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+				}
+
+				template <typename LeftType, typename RightType>
+				const Quotient<typename LeftType::value_type, LeftType, RightType> operator / (const LeftType& lhs, const RightType& rhs)
+				{
+					return Quotient<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+				}
+			}
+		
+			namespace unary
+			{
+				/*************************************/
+				/** Expression Type Specializations **/
+				/*************************************/
+				template <typename ReturnType, typename Type>
+				class Negate : public Unary<ReturnType, Type>
+				{
+				public:
+					Negate(const Type& val) : Unary(val) {}
+					virtual ReturnType operator [] (std::size_t i) const override { return -_element[i]; }
+				};
+
+				template <typename ReturnType, typename Type>
+				class Log : public Unary<ReturnType, Type>
+				{
+				public:
+					Log(const Type& val) : Unary(val) {}
+					virtual ReturnType operator [] (std::size_t i) const override 
+					{ 
+						using std::log;
+						return log(_element[i]); 
+					}
+				};
+
+				template <typename ReturnType, typename Type>
+				class Sin : public Unary<ReturnType, Type>
+				{
+				public:
+					Sin(const Type& val) : Unary(val) {}
+					virtual ReturnType operator [] (std::size_t i) const override 
+					{ 
+						using std::sin;
+						return sin(_element[i]); 
+					}
+				};
+
+				template <typename ReturnType, typename Type>
+				class Cos : public Unary<ReturnType, Type>
+				{
+				public:
+					Cos(const Type& val) : Unary(val) {}
+					virtual ReturnType operator [] (std::size_t i) const override 
+					{ 
+						using std::cos;
+						return cos(_element[i]);
+					}
+				};
+
+				template <typename ReturnType, typename Type>
+				class Tan : public Unary<ReturnType, Type>
+				{
+				public:
+					Tan(const Type& val) : Unary(val) {}
+					virtual ReturnType operator [] (std::size_t i) const override 
+					{ 
+						using std::tan;
+						return tan(_element[i]); 
+					}
+				};
+
+				/***********************/
+				/** Operator Overloads **/
+				/***********************/
+				template <typename E>
+				const Negate<typename E::value_type, E> operator - (const E& val)
+				{
+					return Negate<typename E::value_type, E>(val);
+				}
+
+				template <typename E>
+				const Cos<typename E::value_type, E> cos(const E& val)
+				{
+					return Cos<typename E::value_type, E>(val);
+				}
+
+				template <typename E>
+				const Sin<typename E::value_type, E> sin(const E& val)
+				{
+					return Sin<typename E::value_type, E>(val);
+				}
+
+				template <typename E>
+				const Tan<typename E::value_type, E> tan(const E& val)
+				{
+					return Tan<typename E::value_type, E>(val);
+				}
+
+				template <typename E>
+				const Log<typename E::value_type, E> log(const E& val)
+				{
+					return Log<typename E::value_type, E>(val);
+				}
+			}
 		}
-
-		//template <typename ReturnType, typename LeftType, typename RightType>
-		//class Subtractor : Binary<ReturnType, LeftType, RightType>
-		//{
-		//public:
-		//	virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] - _rhs[i]; }
-		//};
-
-		//template <typename ReturnType, typename LeftType, typename RightType>
-		//class Multiplier : Binary<ReturnType, LeftType, RightType>
-		//{
-		//public:
-		//	virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] * _rhs[i]; }
-		//};
-
-		//template <typename ReturnType, typename LeftType, typename RightType>
-		//class Divider : Binary<ReturnType, LeftType, RightType>
-		//{
-		//public:
-		//	virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] / _rhs[i]; }
-		//};
 	}
 }
