@@ -99,7 +99,7 @@ int main()
 		static_cast<std::size_t>(2e3),
 	};
 
-	const std::size_t N = 1e6;
+	const std::size_t N = static_cast<std::size_t>(1e6);
 
 	std::vector<T> x, y;
 	etree::vector<T> c_x, c_y;

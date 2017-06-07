@@ -4,8 +4,7 @@
 
 #include <vector>
 
-namespace etree
-{
+namespace etree {
 	// This is the default constructor for the vector class below
 	class LoopConstructor
 	{
@@ -34,7 +33,7 @@ namespace etree
 			  typename Container = std::vector<T>,
 			  class    ConstructPolicy = LoopConstructor>
 	class vector : 
-		public  expressions::Expression<T, vector<T, Container>>,
+		public  expressions::Expression<T, vector<T, Container, ConstructPolicy>>,
 		private ConstructPolicy
 	{
 	protected:

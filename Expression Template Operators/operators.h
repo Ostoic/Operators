@@ -3,14 +3,23 @@
 #include <cmath>
 
 namespace etree {
-	namespace expressions
-	{
+	namespace expressions {
 		template <typename ReturnType, class E>
-		class Expression
+		class Expression 
 		{
 		public:
 			// Save the return type of the expression
 			typedef ReturnType value_type;
+
+			// STL iterator interface
+			typedef typename E::iterator iterator;
+			typedef typename E::const_iterator const_iterator;
+
+			iterator begin() { return static_cast<E&>(*this).begin(); }
+			iterator end()	 { return static_cast<E&>(*this).end(); }
+
+			const_iterator cbegin() { return static_cast<const E&>(*this).cbegin(); }
+			const_iterator cend()	{ return static_cast<const E&>(*this).cend(); }
 
 			// Casts *this to underlying expression type using CRTP, then calls [] operator in
 			// Binary/Unary/N-ary derived class
@@ -37,6 +46,16 @@ namespace etree {
 			const RightType& _rhs;
 
 		public:
+			// STL iterator interface
+			typedef typename LeftType::iterator iterator;
+			typedef typename LeftType::const_iterator const_iterator;
+
+			iterator begin() { return _lhs.begin(); }
+			iterator end()	 { return _lhs.end(); }
+
+			const_iterator cbegin() { return _lhs.cbegin(); }
+			const_iterator cend()	{ return _lhs.cend(); }
+
 			Binary(const LeftType& lhs, const RightType& rhs) : _lhs(lhs), _rhs(rhs) {}
 			std::size_t size() const { return _lhs.size(); }
 
@@ -60,6 +79,16 @@ namespace etree {
 			const Type& _element;
 
 		public:
+			// STL iterator interface
+			typedef typename Type::iterator iterator;
+			typedef typename Type::const_iterator const_iterator;
+
+			iterator begin() { return _element.begin(); }
+			iterator end()	 { return _element.end(); }
+
+			const_iterator cbegin() { return _element.cbegin(); }
+			const_iterator cend()	{ return _element.cend(); }
+
 			Unary(const Type& element) : _element(element) {}
 			std::size_t size() const { return _element.size(); }
 
