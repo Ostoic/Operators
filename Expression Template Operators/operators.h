@@ -26,8 +26,11 @@ namespace agac {
 		template <
 			typename ReturnType,
 			typename LeftType, 
-			typename RightType>
-		class Binary : public Expression<ReturnType, Binary<ReturnType, LeftType, RightType>>
+			typename RightType, 
+			class Arity>
+		class Binary : 
+			public Expression <ReturnType, 
+				   Binary     <ReturnType, LeftType, RightType, Arity>>
 		{
 		protected:
 			const LeftType& _lhs;
@@ -38,9 +41,8 @@ namespace agac {
 			std::size_t size() const { return _lhs.size(); }
 
 			// This is where the binary operation is actually performed
-			// We require the accessor to be overridden by an Operator class.
-			// Example: _lhs[i] + rhs[i]
-			virtual ReturnType operator [] (std::size_t) const = 0;
+			// Cast to derived class via CRTP and call overloaded [] operator
+			ReturnType operator [] (std::size_t i) const { return static_cast<const Arity&>(*this)[i]; }
 		};
 
 		// Holds the unary expression of a single object
@@ -48,8 +50,11 @@ namespace agac {
 		// Example: log(element[i])
 		template <
 			typename ReturnType,
-			typename Type>
-		class Unary : public Expression<ReturnType, Unary<ReturnType, Type>>
+			typename Type,
+			class Arity>
+		class Unary : 
+			public Expression <ReturnType, 
+				   Unary	  <ReturnType, Type, Arity>>
 		{
 		protected:
 			const Type& _element;
@@ -61,7 +66,7 @@ namespace agac {
 			// This is where the binary operation is actually performed
 			// We require the accessor to be overridden by an Operator class.
 			// Example: return op(_element[i])
-			virtual ReturnType operator [] (std::size_t) const = 0;
+			ReturnType operator [] (std::size_t i) const { return static_cast<const Arity&>(*this)[i]; }
 		};
 
 		// Note: When we define a unary expression, we use the using directive to 
@@ -75,35 +80,43 @@ namespace agac {
 				/** Expression Type Specializations **/
 				/*************************************/
 				template <typename ReturnType, typename LeftType, typename RightType>
-				class Sum : public Binary<ReturnType, LeftType, RightType>
+				class Sum : 
+					public Binary <ReturnType, LeftType, RightType, 
+						   Sum    <ReturnType, LeftType, RightType>>
 				{
 				public:
 					Sum(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] + _rhs[i]; }
+					ReturnType operator [] (std::size_t i) const { return _lhs[i] + _rhs[i]; }
 				};
 
 				template <typename ReturnType, typename LeftType, typename RightType>
-				class Difference : public Binary<ReturnType, LeftType, RightType>
+				class Difference :
+					public Binary	  <ReturnType, LeftType, RightType,
+						   Difference <ReturnType, LeftType, RightType>>
 				{
 				public:
 					Difference(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] - _rhs[i]; }
+					ReturnType operator [] (std::size_t i) const { return _lhs[i] - _rhs[i]; }
 				};
 
 				template <typename ReturnType, typename LeftType, typename RightType>
-				class Product : public Binary<ReturnType, LeftType, RightType>
+				class Product : 
+					public Binary  <ReturnType, LeftType, RightType,
+						   Product <ReturnType, LeftType, RightType>>
 				{
 				public:
 					Product(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] * _rhs[i]; }
+					ReturnType operator [] (std::size_t i) const { return _lhs[i] * _rhs[i]; }
 				};
 
 				template <typename ReturnType, typename LeftType, typename RightType>
-				class Quotient : public Binary<ReturnType, LeftType, RightType>
+				class Quotient : 
+					public Binary   <ReturnType, LeftType, RightType,
+						   Quotient <ReturnType, LeftType, RightType>>
 				{
 				public:
 					Quotient(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return _lhs[i] / _rhs[i]; }
+					ReturnType operator [] (std::size_t i) const { return _lhs[i] / _rhs[i]; }
 				};
 
 				/************************/
@@ -140,19 +153,23 @@ namespace agac {
 				/** Expression Type Specializations **/
 				/*************************************/
 				template <typename ReturnType, typename Type>
-				class Negate : public Unary<ReturnType, Type>
+				class Negate : 
+					public Unary  <ReturnType, Type, 
+						   Negate <ReturnType, Type>>
 				{
 				public:
 					Negate(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override { return -_element[i]; }
+					ReturnType operator [] (std::size_t i) const { return -_element[i]; }
 				};
 
 				template <typename ReturnType, typename Type>
-				class Log : public Unary<ReturnType, Type>
+				class Log :
+					public Unary <ReturnType, Type,
+						   Log   <ReturnType, Type >>
 				{
 				public:
 					Log(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override
+					ReturnType operator [] (std::size_t i) const
 					{
 						using std::log;
 						return log(_element[i]);
@@ -160,11 +177,13 @@ namespace agac {
 				};
 
 				template <typename ReturnType, typename Type>
-				class Sin : public Unary<ReturnType, Type>
+				class Sin : 
+					public Unary <ReturnType, Type,
+						   Sin   <ReturnType, Type >>
 				{
 				public:
 					Sin(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override
+					ReturnType operator [] (std::size_t i) const
 					{
 						using std::sin;
 						return sin(_element[i]);
@@ -172,11 +191,13 @@ namespace agac {
 				};
 
 				template <typename ReturnType, typename Type>
-				class Cos : public Unary<ReturnType, Type>
+				class Cos :
+					public Unary <ReturnType, Type,
+						   Cos   <ReturnType, Type >>
 				{
 				public:
 					Cos(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override
+					ReturnType operator [] (std::size_t i) const
 					{
 						using std::cos;
 						return cos(_element[i]);
@@ -184,11 +205,13 @@ namespace agac {
 				};
 
 				template <typename ReturnType, typename Type>
-				class Tan : public Unary<ReturnType, Type>
+				class Tan : 
+					public Unary <ReturnType, Type,
+						   Tan   <ReturnType, Type >>
 				{
 				public:
 					Tan(const Type& val) : Unary(val) {}
-					virtual ReturnType operator [] (std::size_t i) const override
+					ReturnType operator [] (std::size_t i) const
 					{
 						using std::tan;
 						return tan(_element[i]);
