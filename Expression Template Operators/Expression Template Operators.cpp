@@ -29,11 +29,11 @@ long long test(const V* _x, const V* _y)
 	const V& y = *_y;
 
 	timer.start();
-	const V result = cos(x*x) + x*y*sin(x) - x*y;
+	const V result = -x + y;
 	timer.stop();
 
 	custom_result = result;
-	return timer.nanoseconds();
+	return timer.milliseconds();
 }
 
 template <typename V>
@@ -50,11 +50,11 @@ long long test_STD(const V* _x, const V* _y)
 	const V& y = *_y;
 
 	timer.start();
-	const V result = cos(x*x) + x*y*sin(x) - x*y;
+	const V result = -x + y;
 	timer.stop();
 
 	std_result = result;
-	return timer.nanoseconds();
+	return timer.milliseconds();
 }
 
 template <typename V>
@@ -70,12 +70,12 @@ long long test_Loop(const V* _x, const V* _y)
 	timer.start();
 	T* result = new T[N];
 	for (unsigned int j = 0; j < N; j++)
-		result[j] = cos(x[j] * x[j]) + x[j] * y[j] * sin(x[j]) - x[j] * y[j];
+		result[j] = -x[j] + y[j];
 
 	timer.stop();
 
 	delete[] result;
-	return timer.nanoseconds();
+	return timer.milliseconds();
 }
 
 template <typename V>
@@ -87,7 +87,7 @@ void setup(const std::size_t N, V* x, V* y)
 	y->resize(N);
 
 	x->assign(N, 2);
-	y->assign(N, 3.1);
+	y->assign(N, 2);
 }
 
 int main()
@@ -102,6 +102,7 @@ int main()
 		static_cast<std::size_t>(1e6),
 		static_cast<std::size_t>(5e6),
 		static_cast<std::size_t>(6e6),
+		static_cast<std::size_t>(1e7),
 	};
 
 	const std::size_t N = 1e6;
