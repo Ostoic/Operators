@@ -7,8 +7,8 @@
 #include <RuntimeTest.h>
 #include <Algebra\Vector_Operators.h>
 
-#include <ETree\operators.h>
-#include <ETree\vector.h>
+#include "vector.h"
+#include "operators.h"
 
 etree::vector<double> custom_result;
 std::vector<double> std_result;
@@ -97,12 +97,6 @@ int main()
 	std::vector<std::size_t> sizes = {
 		static_cast<std::size_t>(1e2),
 		static_cast<std::size_t>(2e3),
-		static_cast<std::size_t>(3e4),
-		static_cast<std::size_t>(4e5),
-		static_cast<std::size_t>(1e6),
-		static_cast<std::size_t>(5e6),
-		static_cast<std::size_t>(6e6),
-		static_cast<std::size_t>(1e7),
 	};
 
 	const std::size_t N = 1e6;

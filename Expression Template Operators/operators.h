@@ -12,7 +12,7 @@ namespace etree {
 			// Save the return type of the expression
 			typedef ReturnType value_type;
 
-			// Casts *this to underlying expression type, then calls [] operator in
+			// Casts *this to underlying expression type using CRTP, then calls [] operator in
 			// Binary/Unary/N-ary derived class
 			ReturnType operator [] (std::size_t i) const { return static_cast<const E&>(*this)[i]; }
 			std::size_t size()					   const { return static_cast<const E&>(*this).size(); }
@@ -27,10 +27,10 @@ namespace etree {
 			typename ReturnType,
 			typename LeftType, 
 			typename RightType, 
-			class Arity>
+			class	 Operator>
 		class Binary : 
 			public Expression <ReturnType, 
-				   Binary     <ReturnType, LeftType, RightType, Arity>>
+				   Binary     <ReturnType, LeftType, RightType, Operator>>
 		{
 		protected:
 			const LeftType& _lhs;
@@ -42,7 +42,7 @@ namespace etree {
 
 			// This is where the binary operation is actually performed
 			// Cast to derived class via CRTP and call overloaded [] operator
-			ReturnType operator [] (std::size_t i) const { return static_cast<const Arity&>(*this)[i]; }
+			ReturnType operator [] (std::size_t i) const { return static_cast<const Operator&>(*this)[i]; }
 		};
 
 		// Holds the unary expression of a single object
@@ -51,10 +51,10 @@ namespace etree {
 		template <
 			typename ReturnType,
 			typename Type,
-			class Arity>
+			class	 Operator>
 		class Unary : 
 			public Expression <ReturnType, 
-				   Unary	  <ReturnType, Type, Arity>>
+				   Unary	  <ReturnType, Type, Operator>>
 		{
 		protected:
 			const Type& _element;
@@ -66,7 +66,7 @@ namespace etree {
 			// This is where the binary operation is actually performed
 			// We require the accessor to be overridden by an Operator class.
 			// Example: return op(_element[i])
-			ReturnType operator [] (std::size_t i) const { return static_cast<const Arity&>(*this)[i]; }
+			ReturnType operator [] (std::size_t i) const { return static_cast<const Operator&>(*this)[i]; }
 		};
 
 		// Note: When we define a unary expression, we use the using directive to 
