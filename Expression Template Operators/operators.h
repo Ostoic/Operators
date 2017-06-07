@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace agac {
+namespace etree {
 	namespace expressions
 	{
 		template <typename ReturnType, class E>

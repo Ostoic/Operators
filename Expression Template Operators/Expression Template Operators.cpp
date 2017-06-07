@@ -7,10 +7,10 @@
 #include <RuntimeTest.h>
 #include <Algebra\Vector_Operators.h>
 
-#include "operators.h"
-#include "Vec.h"
+#include <ETree\operators.h>
+#include <ETree\vector.h>
 
-Vec<double> custom_result;
+etree::vector<double> custom_result;
 std::vector<double> std_result;
 
 using std::endl;
@@ -19,8 +19,8 @@ template <typename V>
 long long test(const V* _x, const V* _y)
 {
 	using namespace vector_operators::vector;
-	using namespace agac::expressions::operators::binary;
-	using namespace agac::expressions::operators::unary;
+	using namespace etree::expressions::operators::binary;
+	using namespace etree::expressions::operators::unary;
 
 	Stopwatch timer;
 
@@ -40,8 +40,8 @@ template <typename V>
 long long test_STD(const V* _x, const V* _y)
 {
 	using namespace vector_operators::vector;
-	using namespace agac::expressions::operators::binary;
-	using namespace agac::expressions::operators::unary;
+	using namespace etree::expressions::operators::binary;
+	using namespace etree::expressions::operators::unary;
 
 	Stopwatch timer;
 
@@ -108,11 +108,11 @@ int main()
 	const std::size_t N = 1e6;
 
 	std::vector<T> x, y;
-	Vec<T> c_x, c_y;
+	etree::vector<T> c_x, c_y;
 
 	RuntimeTest custom(sizes), std(sizes);
-	custom.storeSetup(setup<Vec<T>>, &c_x, &c_y);
-	custom.storeTest("Operators_Custom_times.txt", test<Vec<T>>, &c_x, &c_y);
+	custom.storeSetup(setup<etree::vector<T>>, &c_x, &c_y);
+	custom.storeTest("Operators_Custom_times.txt", test<etree::vector<T>>, &c_x, &c_y);
 	custom.runAll(10);
 	custom.save();
 
