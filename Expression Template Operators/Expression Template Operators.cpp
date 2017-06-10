@@ -118,7 +118,7 @@ int main()
 
 	std::cout << "Answers are equal: " << std::to_string(std_result == custom_result) << endl;
 	std::cout << "Answers: " << std_result[0] << endl
-		<< custom_result[0] << endl;
+							 << custom_result[0] << endl;
 	return 0;
 }
 

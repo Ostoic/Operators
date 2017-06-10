@@ -28,12 +28,12 @@ namespace etree {
 	// Default ctor is LoopConstructor
 	// The construction policy can be overriden as in the case of thrust::device_vector.
 	// Thus, thrust::transform, or a similar method can be used in place of the loop ctor
-	// This allows for proper parellization of the etree expressions
+	// This allows for proper parallelization of the etree expressions
 	template <typename T, 
 			  typename Container = std::vector<T>,
 			  class    ConstructPolicy = LoopConstructor>
 	class vector : 
-		public  expressions::Expression<T, vector<T, Container, ConstructPolicy>>,
+		public  expressions::Expression<T, etree::vector<T, Container, ConstructPolicy>>,
 		private ConstructPolicy
 	{
 	protected:
@@ -42,7 +42,12 @@ namespace etree {
 	public:
 		// Provide interface for STL iteration
 		typedef typename Container::iterator iterator;
-		typedef typename Container::const_iterator const_iterator;
+
+		typedef typename expression_traits<
+			vector<T, Container, ConstructPolicy>>::iterator iterator;
+
+		typedef typename expression_traits<
+			vector<T, Container, ConstructPolicy>>::const_iterator const_iterator;
 
 		iterator begin() { return elements.begin(); }
 		iterator end()	 { return elements.end(); }
@@ -81,6 +86,16 @@ namespace etree {
 
 		template <typename U, typename C>
 		friend bool operator == (const C& lhs, const vector<U>& rhs);
+	};
+
+	// Define traits of vector as an expression
+	// This is the vector traits template specialization.
+	// Since CRTP typedef vision is limited, we have to rely on the traits idiom.
+	template <typename T, typename Container, typename... Ts>
+	struct expression_traits<etree::vector<T, Container, Ts...>>
+	{
+		typedef typename Container::iterator iterator;
+		typedef typename Container::const_iterator const_iterator;
 	};
 
 	template <typename U, typename C>

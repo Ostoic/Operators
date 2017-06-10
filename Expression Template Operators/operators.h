@@ -4,6 +4,9 @@
 
 namespace etree {
 	namespace expressions {
+		template <typename T>
+		struct expression_traits;
+
 		template <typename ReturnType, class E>
 		class Expression 
 		{
@@ -62,6 +65,12 @@ namespace etree {
 			// This is where the binary operation is actually performed
 			// Cast to derived class via CRTP and call overloaded [] operator
 			ReturnType operator [] (std::size_t i) const { return static_cast<const Operator&>(*this)[i]; }
+		};
+
+		template <typename Scalar, typename... Ts>
+		struct expression_traits<Binary<Scalar, Ts...>>
+		{
+			typedef typename 
 		};
 
 		// Holds the unary expression of a single object
