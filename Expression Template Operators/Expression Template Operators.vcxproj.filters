@@ -24,9 +24,6 @@
     <ClInclude Include="operators.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vec.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Expression Template Operators.cpp">

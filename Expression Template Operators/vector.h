@@ -41,8 +41,6 @@ namespace etree {
 
 	public:
 		// Provide interface for STL iteration
-		typedef typename Container::iterator iterator;
-
 		typedef typename expression_traits<
 			vector<T, Container, ConstructPolicy>>::iterator iterator;
 
@@ -99,13 +97,13 @@ namespace etree {
 	};
 
 	template <typename U, typename C>
-	bool operator == (const vector<U>& lhs, const C& rhs)
+	bool operator == (const etree::vector<U>& lhs, const C& rhs)
 	{
 		return lhs.elements == rhs;
 	}
 
 	template <typename U, typename C>
-	bool operator == (const C& lhs, const vector<U>& rhs)
+	bool operator == (const C& lhs, const etree::vector<U>& rhs)
 	{
 		return rhs.elements == lhs;
 	}

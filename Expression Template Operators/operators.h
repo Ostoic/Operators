@@ -7,7 +7,8 @@ namespace etree {
 		template <typename T>
 		struct expression_traits;
 
-		template <typename ReturnType, class E>
+		// Represents any operator expression
+		template <typename ReturnType, class Derived>
 		class Expression 
 		{
 		public:
@@ -15,23 +16,30 @@ namespace etree {
 			typedef ReturnType value_type;
 
 			// STL iterator interface
-			typedef typename E::iterator iterator;
-			typedef typename E::const_iterator const_iterator;
+			typedef typename expression_traits<Expression<ReturnType, Derived>>::iterator iterator;
+			typedef typename expression_traits<Expression<ReturnType, Derived>>::const_iterator const_iterator;
 
-			iterator begin() { return static_cast<E&>(*this).begin(); }
-			iterator end()	 { return static_cast<E&>(*this).end(); }
+			iterator begin() { return static_cast<Derived&>(*this).begin(); }
+			iterator end()	 { return static_cast<Derived&>(*this).end(); }
 
-			const_iterator cbegin() { return static_cast<const E&>(*this).cbegin(); }
-			const_iterator cend()	{ return static_cast<const E&>(*this).cend(); }
+			const_iterator cbegin() { return static_cast<const Derived&>(*this).cbegin(); }
+			const_iterator cend()	{ return static_cast<const Derived&>(*this).cend(); }
 
 			// Casts *this to underlying expression type using CRTP, then calls [] operator in
 			// Binary/Unary/N-ary derived class
-			ReturnType operator [] (std::size_t i) const { return static_cast<const E&>(*this)[i]; }
-			std::size_t size()					   const { return static_cast<const E&>(*this).size(); }
+			ReturnType operator [] (std::size_t i) const { return static_cast<const Derived&>(*this)[i]; }
+			std::size_t size()					   const { return static_cast<const Derived&>(*this).size(); }
 
 			// Provides implicit (or C-style) cast to expression type
-			operator E& ()			    { return static_cast<E&>(*this); }
-			operator const E& () const  { return static_cast<const E&>(*this); }
+			operator Derived& ()			    { return static_cast<Derived&>(*this); }
+			operator const Derived& () const  { return static_cast<const Derived&>(*this); }
+		};
+
+		template <typename R, typename D>
+		struct expression_traits<Expression<R, D>>
+		{
+			typedef D::iterator iterator;
+			typedef D::const_iterator const_iterator;
 		};
 
 		// Holds the binary expression of two objects. 
@@ -65,12 +73,6 @@ namespace etree {
 			// This is where the binary operation is actually performed
 			// Cast to derived class via CRTP and call overloaded [] operator
 			ReturnType operator [] (std::size_t i) const { return static_cast<const Operator&>(*this)[i]; }
-		};
-
-		template <typename Scalar, typename... Ts>
-		struct expression_traits<Binary<Scalar, Ts...>>
-		{
-			typedef typename 
 		};
 
 		// Holds the unary expression of a single object

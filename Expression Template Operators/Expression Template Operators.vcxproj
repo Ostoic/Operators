@@ -81,7 +81,6 @@
   <ItemGroup>
     <ClInclude Include="Neighbor.h" />
     <ClInclude Include="operators.h" />
-    <ClInclude Include="Vec.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Expression Template Operators.cpp" />
