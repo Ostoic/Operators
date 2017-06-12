@@ -4,6 +4,8 @@ namespace etree {
 
 	namespace expressions {
 
+		// Forward declaration traits type to allow the compiler to fully define Expression
+		// 
 		template <typename D>
 		struct traits;
 
@@ -35,6 +37,7 @@ namespace etree {
 			operator const Derived& () const  { return static_cast<const Derived&>(*this); }
 		};
 
+		// Defines iterator traits for base class Expression
 		template <typename R, typename D>
 		struct traits<Expression<R, D>>
 		{
@@ -77,6 +80,7 @@ namespace etree {
 			ReturnType operator [] (std::size_t i) const { return static_cast<const Operator&>(*this)[i]; }
 		};
 
+		// Defines iterator traits for derived specialization Binary
 		template <typename Re, typename L, typename R, class O>
 		struct traits<Binary<Re, L, R, O>>
 		{
@@ -118,6 +122,7 @@ namespace etree {
 			ReturnType operator [] (std::size_t i) const { return static_cast<const Operator&>(*this)[i]; }
 		};
 
+		// Defines iterator traits for derived specialization Unary
 		template <typename Re, typename T, class O>
 		struct traits<Unary<Re, T, O>>
 		{
