@@ -24,6 +24,38 @@ namespace etree {
 		}
 	};
 
+	/*class ThrustConstructor
+	{
+	protected:
+		template <class Container, class Expression>
+		void ctor(Container& c, const E& expression)
+		{
+			thrust::copy(expression.begin(), expression.end(), thrust::back_inserter(c));
+		}
+
+		template <class Container, class Expression>
+		void assignment(Container &c, const Expression& e)
+		{
+			ctor(c, e);
+		}
+	};*/
+
+	class STLConstructor
+	{
+	protected:
+		template <class Container, class Expression>
+		void ctor(Container& c, const E& expression)
+		{
+			std::copy(expression.begin(), expression.end(), std::back_inserter(c));
+		}
+
+		template <class Container, class Expression>
+		void assignment(Container &c, const Expression& e)
+		{
+			ctor(c, e);
+		}
+	};
+
 	// Default data container is std::vector<T> 
 	// Default ctor is LoopConstructor
 	// The construction policy can be overriden as in the case of thrust::device_vector.
@@ -41,11 +73,13 @@ namespace etree {
 
 	public:
 		// Provide interface for STL iteration
-		typedef typename expression_traits<
-			vector<T, Container, ConstructPolicy>>::iterator iterator;
+		typedef typename expressions
+			::traits<vector<T, Container, ConstructPolicy>>
+			::iterator iterator;
 
-		typedef typename expression_traits<
-			vector<T, Container, ConstructPolicy>>::const_iterator const_iterator;
+		typedef typename expressions
+			::traits<vector<T, Container, ConstructPolicy>>
+			::const_iterator const_iterator;
 
 		iterator begin() { return elements.begin(); }
 		iterator end()	 { return elements.end(); }
@@ -58,7 +92,7 @@ namespace etree {
 		T& operator [] (const std::size_t i)	   { return elements[i]; }
 		std::size_t size()					 const { return elements.size(); }
 
-		void assign(std::size_t count, const T& element)  { return elements.assign(count, element); }
+		void assign(std::size_t count, const T& element)  { elements.assign(count, element); }
 		void resize(std::size_t size)					  { elements.resize(size); }
 
 		// CTOR policy details
@@ -89,11 +123,11 @@ namespace etree {
 	// Define traits of vector as an expression
 	// This is the vector traits template specialization.
 	// Since CRTP typedef vision is limited, we have to rely on the traits idiom.
-	template <typename T, typename Container, typename... Ts>
-	struct expression_traits<etree::vector<T, Container, Ts...>>
+	template <typename T, typename C, typename... Ts>
+	struct expressions::traits<etree::vector<T, C, Ts...>>
 	{
-		typedef typename Container::iterator iterator;
-		typedef typename Container::const_iterator const_iterator;
+		typedef typename C::iterator iterator;
+		typedef typename C::const_iterator const_iterator;
 	};
 
 	template <typename U, typename C>

@@ -19,8 +19,8 @@ template <typename V>
 long long test(const V* _x, const V* _y)
 {
 	using namespace vector_operators::vector;
-	using namespace etree::expressions::operators::binary;
-	using namespace etree::expressions::operators::unary;
+	using namespace etree::operators::binary;
+	using namespace etree::operators::unary;
 
 	Stopwatch timer;
 
@@ -40,8 +40,8 @@ template <typename V>
 long long test_STD(const V* _x, const V* _y)
 {
 	using namespace vector_operators::vector;
-	using namespace etree::expressions::operators::binary;
-	using namespace etree::expressions::operators::unary;
+	using namespace etree::operators::binary;
+	using namespace etree::operators::unary;
 
 	Stopwatch timer;
 
