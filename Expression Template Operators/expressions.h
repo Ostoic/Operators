@@ -1,5 +1,8 @@
 #pragma once
 
+// This is more descriptive than the usual static_cast code
+#define CRTP_DOWNCAST(_D) static_cast<_D&>(*this)
+
 namespace etree {
 
 	namespace expressions {
@@ -21,20 +24,20 @@ namespace etree {
 			typedef typename traits<Derived>::iterator iterator;
 			typedef typename traits<Derived>::const_iterator const_iterator;
 
-			iterator begin() { return static_cast<Derived&>(*this).begin(); }
-			iterator end()	 { return static_cast<Derived&>(*this).end(); }
+			iterator begin() { return CRTP_DOWNCAST(Derived).begin(); }
+			iterator end()	 { return CRTP_DOWNCAST(Derived).end();   }
 
-			const_iterator cbegin() { return static_cast<const Derived&>(*this).cbegin(); }
-			const_iterator cend()	{ return static_cast<const Derived&>(*this).cend(); }
+			const_iterator cbegin() { return CRTP_DOWNCAST(const Derived).cbegin(); }
+			const_iterator cend()	{ return CRTP_DOWNCAST(const Derived).cend();   }
 
 			// Casts *this to underlying expression type using CRTP, then calls [] operator in
 			// Binary/Unary/N-ary derived class
-			ReturnType operator [] (std::size_t i) const { return static_cast<const Derived&>(*this)[i]; }
-			std::size_t size()					   const { return static_cast<const Derived&>(*this).size(); }
+			ReturnType operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Derived)[i]; }
+			std::size_t size()					   const { return CRTP_DOWNCAST(const Derived).size(); }
 
 			// Provides implicit (or C-style) cast to expression type
-			operator Derived& ()			    { return static_cast<Derived&>(*this); }
-			operator const Derived& () const  { return static_cast<const Derived&>(*this); }
+			operator Derived& ()			 { return CRTP_DOWNCAST(Derived); }
+			operator const Derived& () const { return CRTP_DOWNCAST(const Derived); }
 		};
 
 		// Defines iterator traits for base class Expression
@@ -77,7 +80,7 @@ namespace etree {
 
 			// This is where the binary operation is actually performed
 			// Cast to derived class via CRTP and call overloaded [] operator
-			ReturnType operator [] (std::size_t i) const { return static_cast<const Operator&>(*this)[i]; }
+			ReturnType operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator)[i]; }
 		};
 
 		// Defines iterator traits for derived specialization Binary
@@ -119,7 +122,7 @@ namespace etree {
 			// This is where the binary operation is actually performed
 			// We require the accessor to be overridden by an Operator class.
 			// Example: return op(_element[i])
-			ReturnType operator [] (std::size_t i) const { return static_cast<const Operator&>(*this)[i]; }
+			ReturnType operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator)[i]; }
 		};
 
 		// Defines iterator traits for derived specialization Unary

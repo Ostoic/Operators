@@ -3,6 +3,7 @@
 #include "operators.h"
 
 #include <vector>
+#include <algorithm>
 
 namespace etree {
 	// This is the default constructor for the vector class below
@@ -44,9 +45,9 @@ namespace etree {
 	{
 	protected:
 		template <class Container, class Expression>
-		void ctor(Container& c, const E& expression)
+		void ctor(Container& c, const Expression& expression)
 		{
-			std::copy(expression.begin(), expression.end(), std::back_inserter(c));
+			//std::copy(std::cbegin(expression), std::cend(expression), std::begin(c));
 		}
 
 		template <class Container, class Expression>
@@ -61,24 +62,27 @@ namespace etree {
 	// The construction policy can be overriden as in the case of thrust::device_vector.
 	// Thus, thrust::transform, or a similar method can be used in place of the loop ctor
 	// This allows for proper parallelization of the etree expressions
-	template <typename T, 
-			  typename Container = std::vector<T>,
-			  class    ConstructPolicy = LoopConstructor>
+	template <
+		typename T, 
+		class    ConstructPolicy = LoopConstructor,
+		typename Container = std::vector<T>>
 	class vector : 
-		public  expressions::Expression<T, etree::vector<T, Container, ConstructPolicy>>,
+		public  expressions::Expression<T, etree::vector<T, ConstructPolicy, Container>>,
 		private ConstructPolicy
 	{
 	protected:
 		Container elements;
 
 	public:
+		typedef typename etree::vector<T, ConstructPolicy, Container> Vector_Type;
+
 		// Provide interface for STL iteration
 		typedef typename expressions
-			::traits<vector<T, Container, ConstructPolicy>>
+			::traits<Vector_Type>
 			::iterator iterator;
 
 		typedef typename expressions
-			::traits<vector<T, Container, ConstructPolicy>>
+			::traits<Vector_Type>
 			::const_iterator const_iterator;
 
 		iterator begin() { return elements.begin(); }
@@ -123,8 +127,8 @@ namespace etree {
 	// Define traits of vector as an expression
 	// This is the vector traits template specialization.
 	// Since CRTP typedef vision is limited, we have to rely on the traits idiom.
-	template <typename T, typename C, typename... Ts>
-	struct expressions::traits<etree::vector<T, C, Ts...>>
+	template <typename T, class P, typename C>
+	struct expressions::traits<etree::vector<T, P, C>>
 	{
 		typedef typename C::iterator iterator;
 		typedef typename C::const_iterator const_iterator;

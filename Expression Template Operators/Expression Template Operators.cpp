@@ -9,6 +9,7 @@
 
 #include "vector.h"
 #include "operators.h"
+#include "expressions.h"
 
 etree::vector<double> custom_result;
 std::vector<double> std_result;
@@ -90,7 +91,7 @@ void setup(const std::size_t N, V* x, V* y)
 	y->assign(N, 2);
 }
 
-int main()
+void runTests()
 {
 	typedef double T;
 
@@ -118,7 +119,28 @@ int main()
 
 	std::cout << "Answers are equal: " << std::to_string(std_result == custom_result) << endl;
 	std::cout << "Answers: " << std_result[0] << endl
-							 << custom_result[0] << endl;
+		<< custom_result[0] << endl;
+}
+
+int main()
+{
+	using namespace etree::operators::binary;
+	using namespace etree::operators::unary;
+
+	typedef double T;
+	const std::size_t N = 3;
+
+	etree::vector<T> x(N), y(N), z(N);
+	x.assign(N, 3);
+	y.assign(N, 2);
+	z.assign(N, -1);
+
+	etree::vector<T> result = x + y + z;
+	etree::expressions::Binary<T, std::vector<T>, std::vector<T>, std::plus<T>> e;
+
+	result.begin();
+	std::cout << "Result[0] = " << result[0] << endl;
+	system("pause");
 	return 0;
 }
 
