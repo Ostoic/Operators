@@ -122,25 +122,36 @@ void runTests()
 		<< custom_result[0] << endl;
 }
 
+template <class Container, class Exp>
+void ctor(Container& c, const Exp& expression)
+{
+	std::copy(expression.cbegin(), expression.cend(), c.begin());
+}
+
 int main()
 {
 	using namespace etree::operators::binary;
 	using namespace etree::operators::unary;
 
 	typedef double T;
+	typedef etree::vector<T> Vec;
 	const std::size_t N = 3;
 
 	etree::vector<T> x(N), y(N), z(N);
-	x.assign(N, 3);
+	//x.assign(N, 3);
+	x[0] = 3;
+	x[1] = -2;
+	x[2] = 0;
+
 	y.assign(N, 2);
 	z.assign(N, -1);
 
-	etree::vector<T> result = x + y + z;
-	etree::expressions::Binary<T, std::vector<T>, std::vector<T>, std::plus<T>> e;
+	etree::vector<T, etree::STLConstructor> result = x + y + z;
 
-	result.begin();
-	std::cout << "Result[0] = " << result[0] << endl;
-	system("pause");
+	for (auto const &each : result)
+		std::cout << "Sum = " << each << endl;
+
+	//system("pause");
 	return 0;
 }
 

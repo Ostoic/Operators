@@ -1,6 +1,7 @@
 #pragma once
 
 #include "operators.h"
+#include "iterators.h"
 
 #include <vector>
 #include <algorithm>
@@ -44,14 +45,14 @@ namespace etree {
 	class STLConstructor
 	{
 	protected:
-		template <class Container, class Expression>
-		void ctor(Container& c, const Expression& expression)
+		template <class Container, class Exp>
+		void ctor(Container& c, const Exp& expression)
 		{
-			//std::copy(std::cbegin(expression), std::cend(expression), std::begin(c));
+			std::copy(expression.cbegin(), expression.cend(), c.begin());
 		}
 
-		template <class Container, class Expression>
-		void assignment(Container &c, const Expression& e)
+		template <class Container, class _Expression>
+		void assignment(Container &c, const _Expression& e)
 		{
 			ctor(c, e);
 		}
@@ -74,22 +75,20 @@ namespace etree {
 		Container elements;
 
 	public:
-		typedef typename etree::vector<T, ConstructPolicy, Container> Vector_Type;
-
 		// Provide interface for STL iteration
 		typedef typename expressions
-			::traits<Vector_Type>
+			::traits<vector>
 			::iterator iterator;
 
 		typedef typename expressions
-			::traits<Vector_Type>
+			::traits<vector>
 			::const_iterator const_iterator;
 
 		iterator begin() { return elements.begin(); }
 		iterator end()	 { return elements.end(); }
 
-		const_iterator cbegin() { return elements.cbegin(); }
-		const_iterator cend()	{ return elements.cend(); }
+		const_iterator cbegin() const { return elements.cbegin(); }
+		const_iterator cend()	const { return elements.cend(); }
 
 		// Interface for interacting with the underlying data
 		T  operator [] (const std::size_t i) const { return elements[i]; }
@@ -134,12 +133,14 @@ namespace etree {
 		typedef typename C::const_iterator const_iterator;
 	};
 
+	// Vector on the left, container on the right
 	template <typename U, typename C>
 	bool operator == (const etree::vector<U>& lhs, const C& rhs)
 	{
 		return lhs.elements == rhs;
 	}
 
+	// Container on the left, vector on the right
 	template <typename U, typename C>
 	bool operator == (const C& lhs, const etree::vector<U>& rhs)
 	{

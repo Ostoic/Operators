@@ -1,8 +1,10 @@
 #pragma once
 
 #include <cmath>
+#include <type_traits>
 
 #include "expressions.h"
+#include "iterators.h"
 
 namespace etree {
 
@@ -12,10 +14,10 @@ namespace etree {
 	namespace operators {
 
 		namespace binary {
-			/*************************************/
+			/********************************/
 			/** Expression Specializations **/
-			/*************************************/
-			template <typename ReturnType, typename LeftType, typename RightType>
+			/********************************/
+			template <typename ReturnType, typename LeftType, typename RightType = LeftType>
 			class Sum : 
 				public expressions::Binary <ReturnType, LeftType, RightType, 
 									Sum	   <ReturnType, LeftType, RightType>>
@@ -25,7 +27,7 @@ namespace etree {
 				ReturnType operator [] (std::size_t i) const { return _lhs[i] + _rhs[i]; }
 			};
 
-			template <typename ReturnType, typename LeftType, typename RightType>
+			template <typename ReturnType, typename LeftType, typename RightType = LeftType>
 			class Difference :
 				public expressions::Binary	   <ReturnType, LeftType, RightType,	// Arity
 									Difference <ReturnType, LeftType, RightType>>	// Operation
@@ -35,7 +37,7 @@ namespace etree {
 				ReturnType operator [] (std::size_t i) const { return _lhs[i] - _rhs[i]; }
 			};
 
-			template <typename ReturnType, typename LeftType, typename RightType>
+			template <typename ReturnType, typename LeftType, typename RightType = LeftType>
 			class Product : 
 				public expressions::Binary  <ReturnType, LeftType, RightType,	// Arity
 									Product <ReturnType, LeftType, RightType>>	// Operation
@@ -45,7 +47,7 @@ namespace etree {
 				ReturnType operator [] (std::size_t i) const { return _lhs[i] * _rhs[i]; }
 			};
 
-			template <typename ReturnType, typename LeftType, typename RightType>
+			template <typename ReturnType, typename LeftType, typename RightType = LeftType>
 			class Quotient :
 				public expressions::Binary   <ReturnType, LeftType, RightType,		// Arity
 								    Quotient <ReturnType, LeftType, RightType >>	// Operation
@@ -55,7 +57,7 @@ namespace etree {
 				ReturnType operator [] (std::size_t i) const { return _lhs[i] / _rhs[i]; }
 			};
 
-			template <typename ReturnType, typename LeftType, typename RightType>
+			template <typename ReturnType, typename LeftType, typename RightType = LeftType>
 			class Power :
 				public expressions::Binary <ReturnType, LeftType, RightType,	// Arity
 									Power  <ReturnType, LeftType, RightType >>	// Operation
