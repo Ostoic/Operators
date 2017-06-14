@@ -151,7 +151,7 @@ int main()
 	for (auto const &each : result)
 		std::cout << "Sum = " << each << endl;
 
-	//system("pause");
+	system("pause");
 	return 0;
 }
 
