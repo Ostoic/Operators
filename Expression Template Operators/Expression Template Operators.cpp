@@ -146,7 +146,7 @@ int main()
 	y.assign(N, 2);
 	z.assign(N, -1);
 
-	etree::vector<T, etree::STLConstructor> result = x + y + z;
+	etree::vector<T, etree::constructor::STL> result = x + y + z;
 
 	for (auto const &each : result)
 		std::cout << "Sum = " << each << endl;

@@ -7,8 +7,10 @@
 #include <algorithm>
 
 namespace etree {
+	namespace constructor {
+
 	// This is the default constructor for the vector class below
-	class LoopConstructor
+	class Loop
 	{
 	protected:
 		template <class C, class E>
@@ -26,23 +28,7 @@ namespace etree {
 		}
 	};
 
-	/*class ThrustConstructor
-	{
-	protected:
-		template <class Container, class Expression>
-		void ctor(Container& c, const E& expression)
-		{
-			thrust::copy(expression.begin(), expression.end(), thrust::back_inserter(c));
-		}
-
-		template <class Container, class Expression>
-		void assignment(Container &c, const Expression& e)
-		{
-			ctor(c, e);
-		}
-	};*/
-
-	class STLConstructor
+	class STL
 	{
 	protected:
 		template <class Container, class Exp>
@@ -58,6 +44,8 @@ namespace etree {
 		}
 	};
 
+	} // end namespace constructo
+
 	// Default data container is std::vector<T> 
 	// Default ctor is LoopConstructor
 	// The construction policy can be overriden as in the case of thrust::device_vector.
@@ -65,7 +53,7 @@ namespace etree {
 	// This allows for proper parallelization of the etree expressions
 	template <
 		typename T, 
-		class    ConstructPolicy = LoopConstructor,
+	class    ConstructPolicy = constructor::Loop,
 		typename Container = std::vector<T>>
 	class vector : 
 		public  expressions::Expression<T, etree::vector<T, ConstructPolicy, Container>>,
