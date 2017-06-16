@@ -78,19 +78,19 @@ public:
 	const_iterator cend()	const { return elements.cend(); }
 
 	// Interface for interacting with the underlying data
-	T  operator [] (const std::size_t i) const { return elements[i]; }
-	T& operator [] (const std::size_t i)	   { return elements[i]; }
-	std::size_t size()					 const { return elements.size(); }
+	const T&  operator [] (const std::size_t i) const { return elements[i]; }
+	T& operator [] (const std::size_t i)			  { return elements[i]; }
+	std::size_t size()							const { return elements.size(); }
 
-	void assign(std::size_t count, const T& element)  { elements.assign(count, element); }
-	void resize(std::size_t size)					  { elements.resize(size); }
+	void assign(const std::size_t count, const T& element)  { elements.assign(count, element); }
+	void resize(const std::size_t size)						{ elements.resize(size); }
 
 	// CTOR policy details
 	using ConstructPolicy::ctor;
 	using ConstructPolicy::assignment;
 
 	vector() {}
-	vector(std::size_t n) : elements(n) {}
+	vector(const std::size_t n) : elements(n) {}
 	//vector(const Container& c) : elements(c) {}
 
 	// The actual evaluation is done here in the constructor for vector
@@ -104,7 +104,7 @@ public:
 	vector<T, Container, ConstructPolicy>& operator = (const expressions::Expression<T, E>& e)
 	{ assignment(elements, e); }*/
 
-	operator Container&() { return this->elements; }
+	operator Container&()			  { return this->elements; }
 	operator const Container&() const { return this->elements; }
 
 	template <typename U, typename C>

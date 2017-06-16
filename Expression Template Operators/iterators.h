@@ -20,7 +20,7 @@ class expression_iterator : public std::iterator<std::input_iterator_tag, Exp_Ty
 public:
 	typedef typename Exp_Type::value_type value_type;
 
-	expression_iterator(const Exp_Type& exp, std::size_t i) : expression(exp), index(i) {}
+	expression_iterator(const Exp_Type& exp, const std::size_t i) : expression(exp), index(i) {}
 
 	// Arithmetic operators
 	// Increment prefix and postfix
