@@ -2,6 +2,8 @@
 
 #include "iterators.h"
 
+#include <boost\iterator\zip_iterator.hpp>
+
 // This is more descriptive than the usual static_cast code
 #define CRTP_DOWNCAST(_D) static_cast<_D>(*this)
 
@@ -13,12 +15,12 @@ template <typename D>
 struct traits;
 
 // Represents any operator expression
-template <typename ReturnType, class Derived>
+template <class Container, class Derived>
 class Expression
 {
 public:
 	// Save the return type of the expression
-	typedef ReturnType value_type;
+	typedef typename Container::value_type value_type;
 
 	// STL iterator interface
 	typedef typename traits<Derived>::iterator iterator;
@@ -34,7 +36,7 @@ public:
 
 	// Casts *this to underlying expression type using CRTP, then calls [] operator in
 	// Binary/Unary/N-ary derived class
-	ReturnType operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Derived&)[i]; }
+	value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Derived&)[i]; }
 	std::size_t size()					   const { return CRTP_DOWNCAST(const Derived&).size(); }
 
 	// Provides implicit (or C-style) cast to expression type
@@ -43,23 +45,23 @@ public:
 };
 
 // Defines iterator traits for base class Expression
-template <typename R, typename D>
-struct traits<Expression<R, D>>
+template <typename C, typename D>
+struct traits<Expression<C, D>>
 {
 	typedef typename D::iterator iterator;
 	typedef typename D::const_iterator const_iterator;
-	typedef typename R value_type;
+	typedef typename C::value_type value_type;
 };
 
 // Holds the binary expression of two objects. 
 template <
-	typename ReturnType,
+	typename Container,
 	typename LeftType,
 	typename RightType,
 	class	 Operator>
 class Binary :
-	public Expression <ReturnType,
-			Binary     <ReturnType, LeftType, RightType, Operator >>
+	public Expression <Container,
+		   Binary     <Container, LeftType, RightType, Operator >>
 {
 protected:
 	const LeftType& _lhs;
@@ -67,6 +69,7 @@ protected:
 
 public:
 	// STL iterator interface
+	typedef typename traits<Binary>::value_type value_type;
 	typedef typename traits<Binary>::iterator iterator;
 	typedef typename traits<Binary>::const_iterator const_iterator;
 
@@ -82,34 +85,35 @@ public:
 
 	// This is where the binary operation is actually performed
 	// Cast to derived class via CRTP and call overloaded [] operator
-	ReturnType operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
+	value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
 };
 
 // Defines iterator traits for derived specialization Binary
-template <typename Re, typename L, typename R, class O>
-struct traits<Binary<Re, L, R, O>>
+template <typename C, typename L, typename R, class O>
+struct traits<Binary<C, L, R, O>>
 {
 	typedef typename iterators::expression_iterator<O> iterator;
 	typedef typename iterators::expression_iterator<O> const_iterator;
-	typedef typename Re value_type;
+	typedef typename C::value_type value_type;
 };
 
 // Holds the unary expression of a single object
 // Example: element[i]
 // Example: log(element[i])
 template <
-	typename ReturnType,
+	typename Container,
 	typename ContainerType,
 	class	 Operator>
 class Unary :
-	public Expression <ReturnType,
-			Unary	  <ReturnType, ContainerType, Operator >>
+	public Expression <Container,
+			Unary	  <Container, ContainerType, Operator >>
 {
 protected:
 	const ContainerType& _element;
 
 public:
 	// STL iterator interface
+	typedef typename traits<Unary>::value_type value_type;
 	typedef typename traits<Unary>::iterator iterator;
 	typedef typename traits<Unary>::const_iterator const_iterator;
 
@@ -126,16 +130,16 @@ public:
 	// This is where the binary operation is actually performed
 	// We require the accessor to be overridden by an Operator class.
 	// Example: return op(_element[i])
-	ReturnType operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
+	value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
 };
 
 // Defines iterator traits for derived specialization Unary
-template <typename Re, typename T, class O>
-struct traits<Unary<Re, T, O>>
+template <typename C, typename T, class O>
+struct traits<Unary<C, T, O>>
 {
 	typedef typename iterators::expression_iterator<O> iterator;
 	typedef typename iterators::expression_iterator<O> const_iterator;
-	typedef typename Re value_type;
+	typedef typename C::value_type value_type;
 };
 	
 } // end namespace expressions

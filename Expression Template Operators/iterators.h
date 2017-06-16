@@ -50,7 +50,7 @@ public:
 	// Returns expression overload at current index
 	value_type operator *() 
 	{ 
-		return expression[index]; 
+		return *(expression.begin() + this->index);
 	};
 };
 

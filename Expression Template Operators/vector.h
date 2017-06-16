@@ -47,7 +47,7 @@ protected:
 	template <class Container, class Exp>
 	void ctor(Container& c, const Exp& expression)
 	{
-		//expression.zip();
+
 		//std::transform(expression.cbegin(), expression.cend(), c.begin(), 
 		//std::generate(c.begin(), c.end(), Traverse_ETree<Exp>(expression));
 		std::copy(expression.cbegin(), expression.cend(), c.begin());
@@ -72,7 +72,7 @@ template <
 	class    ConstructPolicy = constructors::Loop,
 	typename Container = std::vector<T>>
 class vector : 
-	public  expressions::Expression<T, etree::vector<T, ConstructPolicy, Container>>,
+	public  expressions::Expression<Container, etree::vector<T, ConstructPolicy, Container>>,
 	private ConstructPolicy
 {
 protected:
