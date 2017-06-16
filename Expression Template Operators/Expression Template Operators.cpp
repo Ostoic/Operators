@@ -34,7 +34,7 @@ long long test(const V* _x, const V* _y, Out* output)
 	const V& y = *_y;
 
 	timer.start();
-	const V result = -cos(x + y) - log(y*x*y);
+	const V result = x + y;
 	timer.stop();
 
 	*output = result;
@@ -87,13 +87,13 @@ void runTests()
 		static_cast<std::size_t>(1e2),
 		static_cast<std::size_t>(2e3),
 		static_cast<std::size_t>(1e4),
-		static_cast<std::size_t>(1e5),
-		static_cast<std::size_t>(2e5),
-		static_cast<std::size_t>(3e5),
-		static_cast<std::size_t>(4e5),
-		static_cast<std::size_t>(5e5),
-		static_cast<std::size_t>(6e5),
-		static_cast<std::size_t>(7e5),
+		//static_cast<std::size_t>(1e5),
+		//static_cast<std::size_t>(2e5),
+		//static_cast<std::size_t>(3e5),
+		//static_cast<std::size_t>(4e5),
+		//static_cast<std::size_t>(5e5),
+		//static_cast<std::size_t>(6e5),
+		//static_cast<std::size_t>(7e5),
 	};
 
 	const std::size_t N = static_cast<std::size_t>(1e6);

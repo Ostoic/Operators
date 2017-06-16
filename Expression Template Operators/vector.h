@@ -30,9 +30,26 @@ protected:
 class STL
 {
 protected:
+/*
+	template <typename Exp>
+	struct Traverse_ETree
+	{
+		const Exp& expression;
+
+		Traverse_ETree(const Exp& e) : expression(e) {}
+
+		Exp::value_type operator ()(const Exp::value_type& x)
+		{
+			return x;
+		}
+	};*/
+
 	template <class Container, class Exp>
 	void ctor(Container& c, const Exp& expression)
 	{
+		//expression.zip();
+		//std::transform(expression.cbegin(), expression.cend(), c.begin(), 
+		//std::generate(c.begin(), c.end(), Traverse_ETree<Exp>(expression));
 		std::copy(expression.cbegin(), expression.cend(), c.begin());
 	}
 
