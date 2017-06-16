@@ -91,6 +91,7 @@ public:
 
 	vector() {}
 	vector(std::size_t n) : elements(n) {}
+	//vector(const Container& c) : elements(c) {}
 
 	// The actual evaluation is done here in the constructor for vector
 	// The [] operator is overloaded for the Expression e
@@ -102,6 +103,9 @@ public:
 	/*template <typename E>
 	vector<T, Container, ConstructPolicy>& operator = (const expressions::Expression<T, E>& e)
 	{ assignment(elements, e); }*/
+
+	operator Container&() { return this->elements; }
+	operator const Container&() const { return this->elements; }
 
 	template <typename U, typename C>
 	friend bool operator == (const vector<U>& lhs, const C& rhs);
