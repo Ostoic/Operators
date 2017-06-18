@@ -1,122 +1,157 @@
 #pragma once
 
 #include <cmath>
-#include <type_traits>
 
 #include "expressions.h"
 #include "iterators.h"
 
 namespace etree		{
 namespace operators {
+
+
+	template <typename Return, class Operator>
+	struct standard_policy : execution_policy<standard_policy<Return, Operator>>
+	{
+		// Binary operator functors for the standard serial policy
+		template <typename Left, typename Right>
+		Return sum(const Left& left, const Right& right) { return left + right; }
+
+		template <typename Left, typename Right>
+		Return difference(const Left& left, const Right& right) { return left - right; }
+
+		template <typename Left, typename Right>
+		Return product(const Left& left, const Right& right) { return left * right; }
+
+		template <typename Left, typename Right>
+		Return quotient(const Left& left, const Right& right) { return left / right; }
+
+		template <typename Left, typename Right>
+		Return power(const Left& left, const Right& right) { using std::pow; return pow(left, right); }
+		
+		// Unary operator functors for the standard serial policy
+		template <typename T>
+		Return negate(const T& val) { return -val; }
+
+		template <typename T>
+		Return log(const T& val) { using std::log; return -val; }
+
+		template <typename T>
+		Return sin(const T& val) { using std::sin; return sin(val); }
+
+		template <typename T>
+		Return cos(const T& val) { using std::cos; return cos(val); }
+
+		template <typename T>
+		Return tan(const T& val) { using std::tan; return tan(val); }
+	};
+
 namespace binary	{
+
 	/********************************/
 	/** Expression Specializations **/
 	/********************************/
-	template <typename Container, 
-			  typename LeftType, 
-			  typename RightType = LeftType>
+	template <typename Left, 
+			  typename Right = Left,
+			  typename Execution_Policy = standard_policy<Left::value_type, Sum<Left, Right, Execution_Policy> > >
 	class Sum : 
-		public expressions::Binary <Container, LeftType, RightType, 
-							Sum	   <Container, LeftType, RightType>>
+		public expressions::Binary <Left, Right, 
+							Sum	   <Left, Right>>,
+		private Execution_Policy
 	{
 	public:
-		typedef typename value_type value_type;
+		using Execution_Policy::sum;
 
-		Sum(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-		value_type operator [] (std::size_t i) const { return _lhs[i] + _rhs[i]; }
+		Sum(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+		value_type operator [] (std::size_t i) const { return sum(_lhs[i], _rhs[i]); }
 	};
 
-	template <typename Container, 
-			  typename LeftType, 
-			  typename RightType = LeftType>
+	template <typename Left, 
+			  typename Right = Left,
+			  typename Execution_Policy = standard_policy<Left::value_type >>
 	class Difference :
-		public expressions::Binary	   <Container, LeftType, RightType,	// Arity
-							Difference <Container, LeftType, RightType>>	// Operation
+		public expressions::Binary	   <Left, Right,	// Arity
+							Difference <Left, Right>>	// Operation
 	{
 	public:  
-		typedef typename value_type value_type;
+		using Execution_Policy::difference;
 
-		Difference(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-		value_type operator [] (std::size_t i) const { return _lhs[i] - _rhs[i]; }
+		Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+		value_type operator [] (std::size_t i) const { return difference(_lhs[i], _rhs[i]); }
 	};
 
-	template <typename Container, 
-			  typename LeftType, 
-			  typename RightType = LeftType>
+	template <typename Left, 
+			  typename Right = Left,
+			  typename Execution_Policy = standard_policy<Left::value_type >>
 	class Product : 
-		public expressions::Binary  <Container, LeftType, RightType,	// Arity
-							Product <Container, LeftType, RightType>>	// Operation
+		public expressions::Binary  <Left, Right,	// Arity
+							Product <Left, Right>>	// Operation
 	{
 	public:  
-		typedef typename value_type value_type;  typedef typename value_type value_type;
-		
-		Product(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
+		using Execution_Policy::product;
+
+		Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 		value_type operator [] (std::size_t i) const { return _lhs[i] * _rhs[i]; }
 	};
 
-	template <typename Container, 
-			  typename LeftType, 
-			  typename RightType = LeftType>
+	template <typename Left, 
+			  typename Right = Left,
+			  typename Execution_Policy = standard_policy<Left::value_type >>
 	class Quotient :
-		public expressions::Binary   <Container, LeftType, RightType,		// Arity
-							Quotient <Container, LeftType, RightType >>	// Operation
+		public expressions::Binary   <Left, Right,	// Arity
+							Quotient <Left, Right >>	// Operation
 	{
 	public: 
-		typedef typename value_type value_type;
-		
-		Quotient(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-		value_type operator [] (std::size_t i) const { return _lhs[i] / _rhs[i]; }
+		using Execution_Policy::quotient;
+
+		Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+		value_type operator [] (std::size_t i) const { return (_lhs[i], _rhs[i]); }
 	};
 
-	template <typename Container,
-			  typename LeftType, 
-			  typename RightType = LeftType>
+	template <typename Left, 
+			  typename Right = Left,
+			  typename Execution_Policy = standard_policy<Left::value_type >>
 	class Power :
-		public expressions::Binary <Container, LeftType, RightType,	// Arity
-							Power  <Container, LeftType, RightType >>	// Operation
+		public expressions::Binary <Left, Right,		// Arity
+							Power  <Left, Right >>	// Operation
 	{
 	public:  
-		typedef typename value_type value_type;
-		
-		Power(const LeftType& lhs, const RightType& rhs) : Binary(lhs, rhs) {}
-		value_type operator [] (std::size_t i) const 
-		{ 
-			using std::pow;
-			return pow(_lhs[i], _rhs[i]); 
-		}
+		using Execution_Policy::power;
+
+		Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+		value_type operator [] (std::size_t i) const { return power(_lhs[i], _rhs[i]); }
 	};
 
 	/************************/
 	/** Operator Overloads **/
 	/************************/
-	template <typename LeftType, typename RightType>
-	const Sum<typename LeftType::value_type, LeftType, RightType> operator + (const LeftType& lhs, const RightType& rhs)
+	template <typename Left, typename Right>
+	const Sum<Left, Right> operator + (const Left& lhs, const Right& rhs)
 	{
-		return Sum<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+		return Sum<Left, Right>(lhs, rhs);
 	}
 
-	template <typename LeftType, typename RightType>
-	const Difference<typename LeftType::value_type, LeftType, RightType> operator - (const LeftType& lhs, const RightType& rhs)
+	template <typename Left, typename Right>
+	const Difference<Left, Right> operator - (const Left& lhs, const Right& rhs)
 	{
-		return Difference<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+		return Difference<Left, Right>(lhs, rhs);
 	}
 
-	template <typename LeftType, typename RightType>
-	const Product<typename LeftType::value_type, LeftType, RightType> operator * (const LeftType& lhs, const RightType& rhs)
+	template <typename Left, typename Right>
+	const Product<Left, Right> operator * (const Left& lhs, const Right& rhs)
 	{
-		return Product<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+		return Product<Left, Right>(lhs, rhs);
 	}
 
-	template <typename LeftType, typename RightType>
-	const Quotient<typename LeftType::value_type, LeftType, RightType> operator / (const LeftType& lhs, const RightType& rhs)
+	template <typename Left, typename Right>
+	const Quotient<Left, Right> operator / (const Left& lhs, const Right& rhs)
 	{
-		return Quotient<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+		return Quotient<Left, Right>(lhs, rhs);
 	}
 
-	template <typename LeftType, typename RightType>
-	const Power<typename LeftType::value_type, LeftType, RightType> operator ^ (const LeftType& lhs, const RightType& rhs)
+	template <typename Left, typename Right>
+	const Power<Left, Right> operator ^ (const Left& lhs, const Right& rhs)
 	{
-		return Power<typename LeftType::value_type, LeftType, RightType>(lhs, rhs);
+		return Power<Left, Right>(lhs, rhs);
 	}
 
 } // end namespace binary
@@ -129,79 +164,69 @@ namespace unary
 	/*************************************/
 	/** Expression Specializations **/
 	/*************************************/
-	template <typename Container, typename Type>
+	template <typename Exp>
 	class Negate : 
-		public expressions::Unary  <Container, Type,	// Arity
-							Negate <Container, Type>>	// Operation
+		public expressions::Unary  <Exp,	// Arity
+							Negate <Exp>>	// Operation
 	{
 	public:  
-		typedef typename value_type value_type;
-		
-		Negate(const Type& val) : Unary(val) {}
-		value_type operator [] (std::size_t i) const { return -_element[i]; }
+		Negate(const Exp& val) : Unary(val) {}
+		value_type operator [] (std::size_t i) const { return -expression[i]; }
 	};
 
-	template <typename Container, typename Type>
+	template <typename Exp>
 	class Log :
-		public expressions::Unary <Container, Type,	// Arity
-							Log   <Container, Type >>	// Operation
+		public expressions::Unary <Exp,	// Arity
+							Log   <Exp >>	// Operation
 	{
 	public:  
-		typedef typename value_type value_type;
-		
-		Log(const Type& val) : Unary(val) {}
+		Log(const Exp& exp) : Unary(exp) {}
 		value_type operator [] (std::size_t i) const
 		{
 			using std::log;
-			return log(_element[i]);
+			return log(expression[i]);
 		}
 	};
 
-	template <typename Container, typename Type>
+	template <typename Exp>
 	class Sin : 
-		public expressions::Unary <Container, Type,	// Arity
-							Sin   <Container, Type >>	// Operation
+		public expressions::Unary <Exp,	// Arity
+							Sin   <Exp >>	// Operation
 	{
 	public:  
-		typedef typename value_type value_type;
-		
-		Sin(const Type& val) : Unary(val) {}
+		Sin(const Exp& exp) : Unary(exp) {}
 		value_type operator [] (std::size_t i) const
 		{
 			using std::sin;
-			return sin(_element[i]);
+			return sin(expression[i]);
 		}
 	};
 
-	template <typename Container, typename Type>
+	template <typename Exp>
 	class Cos :
-		public expressions::Unary <Container, Type,	// Arity
-							Cos   <Container, Type >>	// Operation
+		public expressions::Unary <Exp,	// Arity
+							Cos   <Exp >>	// Operation
 	{
 	public: 
-		typedef typename value_type value_type;
-		
-		Cos(const Type& val) : Unary(val) {}
+		Cos(const Exp& exp) : Unary(exp) {}
 		value_type operator [] (std::size_t i) const
 		{
 			using std::cos;
-			return cos(_element[i]);
+			return cos(expression[i]);
 		}
 	};
 
-	template <typename Container, typename Type>
+	template <typename Exp>
 	class Tan : 
-		public expressions::Unary <Container, Type,	// Arity
-							Tan   <Container, Type >>	// Operation
+		public expressions::Unary <Exp,	// Arity
+							Tan   <Exp>>	// Operation
 	{
 	public:  
-		typedef typename value_type value_type;
-		
-		Tan(const Type& val) : Unary(val) {}
+		Tan(const Exp& exp) : Unary(exp) {}
 		value_type operator [] (std::size_t i) const
 		{
 			using std::tan;
-			return tan(_element[i]);
+			return tan(expression[i]);
 		}
 	};
 
@@ -209,33 +234,33 @@ namespace unary
 	/** Operator Overloads **/
 	/***********************/
 	template <typename E>
-	const Negate<typename E::value_type, E> operator - (const E& vec)
+	const Negate<E> operator - (const E& vec)
 	{
-		return Negate<typename E::value_type, E>(vec);
+		return Negate<E>(vec);
 	}
 
 	template <typename E>
-	const Cos<typename E::value_type, E> cos(const E& vec)
+	const Cos<E> cos(const E& vec)
 	{
-		return Cos<typename E::value_type, E>(vec);
+		return Cos<E>(vec);
 	}
 
 	template <typename E>
-	const Sin<typename E::value_type, E> sin(const E& vec)
+	const Sin<E> sin(const E& vec)
 	{
-		return Sin<typename E::value_type, E>(vec);
+		return Sin<E>(vec);
 	}
 
 	template <typename E>
-	const Tan<typename E::value_type, E> tan(const E& vec)
+	const Tan<E> tan(const E& vec)
 	{
-		return Tan<typename E::value_type, E>(vec);
+		return Tan<E>(vec);
 	}
 
 	template <typename E>
-	const Log<typename E::value_type, E> log(const E& vec)
+	const Log<E> log(const E& vec)
 	{
-		return Log<typename E::value_type, E>(vec);
+		return Log<E>(vec);
 	}
 }
 

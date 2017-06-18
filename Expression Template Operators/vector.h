@@ -67,18 +67,25 @@ protected:
 // The construction policy can be overriden as in the case of thrust::device_vector.
 // Thus, thrust::transform, or a similar method can be used in place of the loop ctor
 // This allows for proper parallelization of the etree expressions
-template <
-	typename T, 
-	class    ConstructPolicy = constructors::Loop,
-	typename Container = std::vector<T>>
+template <typename T, 
+		  typename ConstructPolicy = constructors::Loop,
+		  typename Container = std::vector<T>>
 class vector : 
-	public  expressions::Expression<Container, etree::vector<T, ConstructPolicy, Container>>,
+	public  expressions::Expression<etree::vector<T, ConstructPolicy, Container>>,
 	private ConstructPolicy
 {
 protected:
 	Container elements;
 
 public:
+	typedef typename expressions
+		::traits<vector>
+		::container_type container_type;
+
+	typedef typename expressions
+		::traits<vector>
+		::value_type value_type;
+
 	// Provide interface for STL iteration
 	typedef typename expressions
 		::traits<vector>
@@ -113,7 +120,7 @@ public:
 	// The actual evaluation is done here in the constructor for vector
 	// The [] operator is overloaded for the Expression e
 	template <typename E>
-	vector(const expressions::Expression<T, E>& e) :
+	vector(const expressions::Expression<E>& e) :
 		elements(e.size())
 	{ ctor(elements, e); }
 
@@ -137,6 +144,9 @@ public:
 template <typename T, class P, typename C>
 struct expressions::traits<etree::vector<T, P, C>>
 {
+	typedef T value_type;
+	typedef C container_type;
+
 	typedef typename C::iterator iterator;
 	typedef typename C::const_iterator const_iterator;
 };

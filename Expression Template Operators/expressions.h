@@ -2,27 +2,33 @@
 
 #include "iterators.h"
 
-#include <boost\iterator\zip_iterator.hpp>
-
 // This is more descriptive than the usual static_cast code
 #define CRTP_DOWNCAST(_D) static_cast<_D>(*this)
 
 namespace etree {
+
+// Base execution policy used for selecting different execution systems
+template <class Derived>
+struct execution_policy {};
+
 namespace expressions {
 
-// Forward declare traits type to allow the compiler to fully define Expression
 template <typename D>
 struct traits;
 
+
 // Represents any operator expression
-template <class Container, class Derived>
+template <class Derived>
 class Expression
 {
 public:
 	// Save the return type of the expression
-	typedef typename Container::value_type value_type;
+	typedef typename traits<Derived>::value_type value_type;
+	typedef typename traits<Derived>::container_type container_type;
 
 	// STL iterator interface
+	//typedef typename traits<Derived>::expr_iterator expr_iterator;
+
 	typedef typename traits<Derived>::iterator iterator;
 	typedef typename traits<Derived>::const_iterator const_iterator;
 
@@ -44,32 +50,24 @@ public:
 	operator const Derived& () const { return CRTP_DOWNCAST(const Derived&); }
 };
 
-// Defines iterator traits for base class Expression
-template <typename C, typename D>
-struct traits<Expression<C, D>>
-{
-	typedef typename D::iterator iterator;
-	typedef typename D::const_iterator const_iterator;
-	typedef typename C::value_type value_type;
-};
-
 // Holds the binary expression of two objects. 
-template <
-	typename Container,
-	typename LeftType,
-	typename RightType,
-	class	 Operator>
+template <typename Left,
+		  typename Right,
+		  class	   Operator>
 class Binary :
-	public Expression <Container,
-		   Binary     <Container, LeftType, RightType, Operator >>
+	public Expression <Binary <Left, Right, Operator >>
 {
 protected:
-	const LeftType& _lhs;
-	const RightType& _rhs;
+	const Left& left;
+	const Right& right;
 
 public:
 	// STL iterator interface
 	typedef typename traits<Binary>::value_type value_type;
+	typedef typename traits<Binary>::container_type container_type;
+
+	typedef typename traits<Binary>::expr_iterator expr_iterator;
+
 	typedef typename traits<Binary>::iterator iterator;
 	typedef typename traits<Binary>::const_iterator const_iterator;
 
@@ -80,40 +78,32 @@ public:
 	const_iterator cbegin() const { return const_iterator(CRTP_DOWNCAST(const Operator&), 0); }
 	const_iterator cend()	const { return const_iterator(CRTP_DOWNCAST(const Operator&), size()); }
 
-	Binary(const LeftType& lhs, const RightType& rhs) : _lhs(lhs), _rhs(rhs) {}
-	std::size_t size() const { return _lhs.size(); }
+	Binary(const Left& lhs, const Right& rhs) : left(lhs), right(rhs) {}
+	std::size_t size() const { return left.size(); }
 
 	// This is where the binary operation is actually performed
 	// Cast to derived class via CRTP and call overloaded [] operator
 	value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
 };
 
-// Defines iterator traits for derived specialization Binary
-template <typename C, typename L, typename R, class O>
-struct traits<Binary<C, L, R, O>>
-{
-	typedef typename iterators::expression_iterator<O> iterator;
-	typedef typename iterators::expression_iterator<O> const_iterator;
-	typedef typename C::value_type value_type;
-};
-
 // Holds the unary expression of a single object
 // Example: element[i]
 // Example: log(element[i])
-template <
-	typename Container,
-	typename ContainerType,
-	class	 Operator>
+template <typename Exp,
+		  class	   Operator>
 class Unary :
-	public Expression <Container,
-			Unary	  <Container, ContainerType, Operator >>
+	public Expression <Unary <Exp, Operator >>
 {
 protected:
-	const ContainerType& _element;
+	const Exp& expression;
 
 public:
 	// STL iterator interface
 	typedef typename traits<Unary>::value_type value_type;
+	typedef typename traits<Unary>::container_type container_type;
+
+	typedef typename traits<Unary>::expr_iterator expr_iterator;
+
 	typedef typename traits<Unary>::iterator iterator;
 	typedef typename traits<Unary>::const_iterator const_iterator;
 
@@ -124,8 +114,8 @@ public:
 	const_iterator cbegin() const { return const_iterator(CRTP_DOWNCAST(const Operator&), 0); }
 	const_iterator cend()	const { return const_iterator(CRTP_DOWNCAST(const Operator&), size()); }
 
-	Unary(const ContainerType& element) : _element(element) {}
-	std::size_t size() const { return _element.size(); }
+	Unary(const Exp& exp) : expression(exp) {}
+	std::size_t size() const { return expression.size(); }
 
 	// This is where the binary operation is actually performed
 	// We require the accessor to be overridden by an Operator class.
@@ -133,13 +123,31 @@ public:
 	value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
 };
 
-// Defines iterator traits for derived specialization Unary
-template <typename C, typename T, class O>
-struct traits<Unary<C, T, O>>
+// Defines traits for derived specialization Binary
+// Specialization: Left type is an expression
+template <typename L, typename R, class O>
+struct traits<Binary<L, R, O>>
 {
-	typedef typename iterators::expression_iterator<O> iterator;
-	typedef typename iterators::expression_iterator<O> const_iterator;
-	typedef typename C::value_type value_type;
+	typedef typename L::value_type value_type;
+	typedef typename L::container_type container_type;
+
+	typedef typename container_type::iterator  iterator;
+	typedef typename container_type::const_iterator const_iterator;
+	typedef typename iterators::binary_iterator<O> expr_iterator;
+};
+
+// Defines traits for derived specialization Unary
+template <typename E, class O>
+struct traits<Unary<E, O>>
+{
+	// is_expression<E> then typedef E::container_type container_type
+	// otherwise typedef E container_type
+	typedef typename E::value_type value_type;
+	typedef typename E::container_type container_type;
+
+	typedef typename container_type::iterator  iterator;
+	typedef typename container_type::const_iterator const_iterator;
+	typedef typename iterators::unary_iterator<O> expr_iterator;
 };
 	
 } // end namespace expressions

@@ -37,7 +37,7 @@ long long test(const V* _x, const V* _y, Out* output)
 	const V result = x + y;
 	timer.stop();
 
-	*output = result;
+	//*output = result;
 	return DURATION(timer);
 }
 
@@ -140,7 +140,6 @@ int main()
 	typedef double T;
 	typedef etree::vector<T> Vec;
 	const std::size_t N = 3;
-
 
 	std::vector<T> x, y;
 	etree::vector<T> c_x(N), c_y(N);
