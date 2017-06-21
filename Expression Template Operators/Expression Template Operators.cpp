@@ -18,14 +18,14 @@ std::vector<double> loop_result;
 
 using std::endl;
 
-#define DURATION(timer) timer.nanoseconds()
+#define DURATION(timer) timer.nanoseconds().to_seconds()
 
 template <typename V, typename Out>
 long long test(const V* _x, const V* _y, Out* output)
 {
 	using namespace vector_operators::vector;
 	using namespace etree::operators::binary;
-	using namespace etree::operators::unary;
+	//using namespace etree::operators::unary;
 
 	Stopwatch timer;
 
@@ -135,7 +135,7 @@ void runTests()
 int main()
 {
 	using namespace etree::operators::binary;
-	using namespace etree::operators::unary;
+	//using namespace etree::operators::unary;
 
 	typedef double T;
 	typedef etree::vector<T> Vec;

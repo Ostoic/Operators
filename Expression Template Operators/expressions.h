@@ -7,10 +7,6 @@
 
 namespace etree {
 
-// Base execution policy used for selecting different execution systems
-template <class Derived>
-struct execution_policy {};
-
 namespace expressions {
 
 template <typename D>
@@ -25,9 +21,6 @@ public:
 	// Save the return type of the expression
 	typedef typename traits<Derived>::value_type value_type;
 	typedef typename traits<Derived>::container_type container_type;
-
-	// STL iterator interface
-	//typedef typename traits<Derived>::expr_iterator expr_iterator;
 
 	typedef typename traits<Derived>::iterator iterator;
 	typedef typename traits<Derived>::const_iterator const_iterator;
@@ -55,7 +48,7 @@ template <typename Left,
 		  typename Right,
 		  class	   Operator>
 class Binary :
-	public Expression <Binary <Left, Right, Operator >>
+	public Expression <Binary <Left, Right, Operator>>
 {
 protected:
 	const Left& left;
@@ -65,8 +58,6 @@ public:
 	// STL iterator interface
 	typedef typename traits<Binary>::value_type value_type;
 	typedef typename traits<Binary>::container_type container_type;
-
-	typedef typename traits<Binary>::expr_iterator expr_iterator;
 
 	typedef typename traits<Binary>::iterator iterator;
 	typedef typename traits<Binary>::const_iterator const_iterator;
@@ -83,7 +74,7 @@ public:
 
 	// This is where the binary operation is actually performed
 	// Cast to derived class via CRTP and call overloaded [] operator
-	value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
+	value_type operator [] (std::size_t i) const { return Operator::apply(left[i], right[i]); }
 };
 
 // Holds the unary expression of a single object
@@ -102,8 +93,6 @@ public:
 	typedef typename traits<Unary>::value_type value_type;
 	typedef typename traits<Unary>::container_type container_type;
 
-	typedef typename traits<Unary>::expr_iterator expr_iterator;
-
 	typedef typename traits<Unary>::iterator iterator;
 	typedef typename traits<Unary>::const_iterator const_iterator;
 
@@ -114,40 +103,56 @@ public:
 	const_iterator cbegin() const { return const_iterator(CRTP_DOWNCAST(const Operator&), 0); }
 	const_iterator cend()	const { return const_iterator(CRTP_DOWNCAST(const Operator&), size()); }
 
+	using Operator::apply;
+
 	Unary(const Exp& exp) : expression(exp) {}
 	std::size_t size() const { return expression.size(); }
 
 	// This is where the binary operation is actually performed
 	// We require the accessor to be overridden by an Operator class.
 	// Example: return op(_element[i])
-	value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
+	value_type operator [] (std::size_t i) const { return Operator::apply(expression[i]); }
+	//value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
 };
 
 // Defines traits for derived specialization Binary
-// Specialization: Left type is an expression
 template <typename L, typename R, class O>
 struct traits<Binary<L, R, O>>
 {
-	typedef typename L::value_type value_type;
-	typedef typename L::container_type container_type;
+	using value_type		   = typename L::value_type;
+	using container_type	   = typename L::container_type;
 
-	typedef typename container_type::iterator  iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename iterators::binary_iterator<O> expr_iterator;
+	using left_iterator		   = typename L::iterator;
+	using left_const_iterator  = typename L::iterator;
+
+	using right_iterator	   = typename R::iterator;
+	using right_const_iterator = typename R::iterator;
+
+	using iterator		 = typename iterators
+		::binary_etree_iterator<
+		left_iterator,
+		right_iterator, 
+		typename O::apply>;
+
+	using const_iterator = typename iterators
+		::binary_etree_iterator<
+		left_const_iterator,
+		right_const_iterator,
+		typename O::apply>;
 };
 
 // Defines traits for derived specialization Unary
-template <typename E, class O>
-struct traits<Unary<E, O>>
+template <typename T, class O>
+struct traits<Unary<T, O>>
 {
-	// is_expression<E> then typedef E::container_type container_type
-	// otherwise typedef E container_type
-	typedef typename E::value_type value_type;
-	typedef typename E::container_type container_type;
+	using value_type		  = typename T::value_type;
+	using container_type	  = typename T::container_type;
 
-	typedef typename container_type::iterator  iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename iterators::unary_iterator<O> expr_iterator;
+	using base_iterator		  = typename T::iterator;
+	using const_base_iterator = typename T::const_iterator;
+
+	using iterator			  = typename iterators::unary_etree_iterator<base_iterator, typename O::apply>;
+	using const_iterator	  = typename iterators::unary_etree_iterator<const_base_iterator, typename O::apply>;
 };
 	
 } // end namespace expressions
