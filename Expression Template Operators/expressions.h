@@ -1,6 +1,8 @@
 #pragma once
 
 #include "iterators.h"
+#include "execution_policy.h"
+#include "config\config.h"
 
 // This is more descriptive than the usual static_cast code
 #define CRTP_DOWNCAST(_D) static_cast<_D>(*this)
@@ -46,35 +48,36 @@ public:
 // Holds the binary expression of two objects. 
 template <typename Left,
 		  typename Right,
+		  class	   Policy,
 		  class	   Operator>
 class Binary :
-	public Expression <Binary <Left, Right, Operator>>
+	public Expression <Binary <Left, Right, Policy, Operator>>
 {
 protected:
 	const Left& left;
 	const Right& right;
 
+	Operator apply;
+
 public:
 	// STL iterator interface
-	typedef typename traits<Binary>::value_type value_type;
-	typedef typename traits<Binary>::container_type container_type;
+	using value_type	 = typename traits<Binary>::value_type;
+	using container_type = typename traits<Binary>::container_type;
 
-	typedef typename traits<Binary>::iterator iterator;
-	typedef typename traits<Binary>::const_iterator const_iterator;
-
-	// Return expression_iterator wrapper for derived *this.
-	iterator begin() { return iterator(CRTP_DOWNCAST(const Operator&), 0); }
-	iterator end()	 { return iterator(CRTP_DOWNCAST(const Operator&), size()); }
-
-	const_iterator cbegin() const { return const_iterator(CRTP_DOWNCAST(const Operator&), 0); }
-	const_iterator cend()	const { return const_iterator(CRTP_DOWNCAST(const Operator&), size()); }
+	using iterator		 = typename traits<Binary>::iterator;
+	using const_iterator = typename traits<Binary>::const_iterator;
 
 	Binary(const Left& lhs, const Right& rhs) : left(lhs), right(rhs) {}
-	std::size_t size() const { return left.size(); }
 
-	// This is where the binary operation is actually performed
-	// Cast to derived class via CRTP and call overloaded [] operator
-	value_type operator [] (std::size_t i) const { return Operator::apply(left[i], right[i]); }
+	// Return expression_iterator wrapper for derived *this.
+	iterator begin() { return iterator(left.begin(), right.begin(), apply); }
+	iterator end()	 { return iterator(left.end(),	 right.end(),	apply); }
+
+	const_iterator cbegin() const { return const_iterator(left.cbegin(), right.cbegin(), apply); }
+	const_iterator cend()	const { return const_iterator(left.cend(),	 right.cend(),   apply); }
+
+	std::size_t size()					   const { return left.size(); }
+	value_type operator [] (std::size_t i) const { return apply(left[i], right[i]); }
 };
 
 // Holds the unary expression of a single object
@@ -88,57 +91,55 @@ class Unary :
 protected:
 	const Exp& expression;
 
+	Operator apply;
+
 public:
 	// STL iterator interface
-	typedef typename traits<Unary>::value_type value_type;
-	typedef typename traits<Unary>::container_type container_type;
+	using value_type	 = typename traits<Unary>::value_type;
+	using container_type = typename traits<Unary>::container_type;
 
-	typedef typename traits<Unary>::iterator iterator;
-	typedef typename traits<Unary>::const_iterator const_iterator;
-
-	// Return expression_iterator wrapper for derived *this.
-	iterator begin() { return iterator(CRTP_DOWNCAST(const Operator&), 0); }
-	iterator end()	 { return iterator(CRTP_DOWNCAST(const Operator&), size()); }
-
-	const_iterator cbegin() const { return const_iterator(CRTP_DOWNCAST(const Operator&), 0); }
-	const_iterator cend()	const { return const_iterator(CRTP_DOWNCAST(const Operator&), size()); }
-
-	using Operator::apply;
+	using iterator		 = typename traits<Unary>::iterator;
+	using const_iterator = typename traits<Unary>::const_iterator;
 
 	Unary(const Exp& exp) : expression(exp) {}
-	std::size_t size() const { return expression.size(); }
 
-	// This is where the binary operation is actually performed
-	// We require the accessor to be overridden by an Operator class.
-	// Example: return op(_element[i])
-	value_type operator [] (std::size_t i) const { return Operator::apply(expression[i]); }
-	//value_type operator [] (std::size_t i) const { return CRTP_DOWNCAST(const Operator&)[i]; }
+	// Return expression_iterator wrapper for derived *this.
+	iterator begin() { return iterator(expression.begin(), apply); }
+	iterator end()	 { return iterator(expression.end(),   apply); }
+
+	const_iterator cbegin() const { return const_iterator(expression.cbegin(), apply); }
+	const_iterator cend()	const { return const_iterator(expression.cend(),   apply); }
+
+	std::size_t size()					   const { return expression.size(); }
+	value_type operator [] (std::size_t i) const { return apply(expression[i]); }
 };
 
 // Defines traits for derived specialization Binary
-template <typename L, typename R, class O>
-struct traits<Binary<L, R, O>>
+template <typename L, typename R, class O, class P>
+struct traits<Binary<L, R, O, P>>
 {
 	using value_type		   = typename L::value_type;
 	using container_type	   = typename L::container_type;
 
 	using left_iterator		   = typename L::iterator;
-	using left_const_iterator  = typename L::iterator;
+	using left_const_iterator  = typename L::const_iterator;
 
 	using right_iterator	   = typename R::iterator;
-	using right_const_iterator = typename R::iterator;
+	using right_const_iterator = typename R::const_iterator;
+
+	using policy = P;
 
 	using iterator		 = typename iterators
-		::binary_etree_iterator<
-		left_iterator,
-		right_iterator, 
-		typename O::apply>;
+		::binary_iterator<left_iterator,
+						  right_iterator, 
+						  O,
+						  policy>;
 
 	using const_iterator = typename iterators
-		::binary_etree_iterator<
-		left_const_iterator,
-		right_const_iterator,
-		typename O::apply>;
+		::binary_iterator<left_const_iterator,
+						  right_const_iterator, 
+						  O,
+						  policy>;
 };
 
 // Defines traits for derived specialization Unary
@@ -151,8 +152,8 @@ struct traits<Unary<T, O>>
 	using base_iterator		  = typename T::iterator;
 	using const_base_iterator = typename T::const_iterator;
 
-	using iterator			  = typename iterators::unary_etree_iterator<base_iterator, typename O::apply>;
-	using const_iterator	  = typename iterators::unary_etree_iterator<const_base_iterator, typename O::apply>;
+	using iterator			  = typename iterators::unary_iterator<base_iterator, O>;
+	using const_iterator	  = typename iterators::unary_iterator<const_base_iterator, O>;
 };
 	
 } // end namespace expressions

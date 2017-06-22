@@ -2,47 +2,105 @@
 
 #include <cmath>
 
+#ifdef ETREE_USING_THRUST
+#	include <thrust\complex.h>
+#endif
+
+#include "config\config.h"
+
 namespace etree  {
 
 // Base execution policy used for selecting different execution systems
-template <class Derived>
-struct execution_policy {};
+template <class Return>
+struct execution_policy
+{
+};
 
 template <typename Return>
-struct serial_policy : execution_policy<serial_policy<Return>>
+struct serial_policy : execution_policy<Return>
 {
-	using result_type = Return;
+	// Binary operator functors for the serial execution policy
+	struct sum
+	{
+		template <typename Left, typename Right>
+		Return operator () (const Left& left, const Right& right) const
+		{ return left + right; }
+	};
 
-	// Binary operator functors for the standard serial policy
-	struct sum			{ template <typename Left, typename Right> result_type operator () (const Left& left, const Right& right) const { return left + right; } };
+	struct difference
+	{
+		template <typename Left, typename Right>
+		Return operator () (const Left& left, const Right& right) const
+		{ return left - right; }
+	};
 
-	template <typename Left, typename Right>
-	struct difference	{ result_type operator () (const Left& left, const Right& right)  { return left - right; } };
+	struct product
+	{
+		template <typename Left, typename Right>
+		Return operator () (const Left& left, const Right& right) const
+		{ return left * right; }
+	};
 
-	template <typename Left, typename Right>
-	struct product		{ result_type operator () (const Left& left, const Right& right)  { return left * right; } };
+	struct quotient
+	{
+		template <typename Left, typename Right>
+		Return operator () (const Left& left, const Right& right) const
+		{ return left / right; }
+	};
 
-	template <typename Left, typename Right>
-	struct quotient		{ result_type operator () (const Left& left, const Right& right)  { return left / right; } };
+	struct pow
+	{
+		template <typename Left, typename Right>
+		Return operator () (const Left& left, const Right& right) const
+		{ using std::pow; return pow(left, right); }
+	};
 
-	template <typename Left, typename Right>
-	struct power		{ result_type operator () (const Left& left, const Right& right)  { return pow(left, right); } };
+};
 
-	// Unary operator functors for the standard serial policy
-	template <typename T>
-	static inline result_type negate(const T& val) { return -val; }
+template <typename Return>
+struct thrust_policy : execution_policy<Return>
+{
+	// Binary operator functors for the serial execution policy
+	struct sum
+	{
+		template <typename Left, typename Right>
+		THRUST_DEVICE(
+		Return operator () (const Left& left, const Right& right) const
+		{ return left + right; })
+	};
 
-	template <typename T>
-	static inline result_type log(const T& val) { using std::log; return log(val); }
+	struct difference
+	{
+		template <typename Left, typename Right>
+		THRUST_DEVICE(
+		Return operator () (const Left& left, const Right& right) const
+		{ return left - right; })
+	};
 
-	template <typename T>
-	static inline result_type sin(const T& val) { using std::sin; return sin(val); }
+	struct product
+	{
+		template <typename Left, typename Right>
+		THRUST_DEVICE(
+		Return operator () (const Left& left, const Right& right) const
+		{ return left * right; })
+	};
 
-	template <typename T>
-	static inline result_type cos(const T& val) { using std::cos; return cos(val); }
+	struct quotient
+	{
+		template <typename Left, typename Right>
+		THRUST_DEVICE(
+		Return operator () (const Left& left, const Right& right) const
+		{ return left / right; })
+	};
 
-	template <typename T>
-	static inline result_type tan(const T& val) { using std::tan; return tan(val); }
+	struct pow
+	{
+		template <typename Left, typename Right>
+		THRUST_DEVICE(
+		Return operator () (const Left& left, const Right& right) const
+		{ using IF_USING_THRUST(using thrust::pow); return pow(left, right); })
+	};
+
 };
 
 } // end namespace etree

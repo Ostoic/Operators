@@ -115,7 +115,7 @@ public:
 
 	vector() {}
 	vector(const std::size_t n) : elements(n) {}
-	//vector(const Container& c) : elements(c) {}
+	//vector(const Container& c)  : elements(c) {}
 
 	// The actual evaluation is done here in the constructor for vector
 	// The [] operator is overloaded for the Expression e

@@ -5,6 +5,7 @@
 #include "expressions.h"
 #include "iterators.h"
 #include "execution_policy.h"
+#include "config\config.h"
 
 namespace etree		{
 namespace operators {
@@ -14,79 +15,75 @@ namespace binary	{
 	/** Expression Specializations **/
 	/********************************/
 	template <typename Left, 
-			  typename Right = Left,
-			  typename Execution_Policy = serial_policy<typename Left::value_type>>
+			  typename Right 
+					   =	  std::enable_if
+							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
+					   Left>, // Default type is Right = Left
+			  typename Execution_Policy = serial_policy <typename Left::value_type>>
 	class Sum : 
-		public  expressions::Binary <Left, Right, 
-							 Sum	<Left, Right, Execution_Policy>>,
-		private Execution_Policy
+		public expressions::Binary <Left, Right,
+							Execution_Policy, typename 
+							Execution_Policy::sum>
 	{
 	public:
-		//using Execution_Policy::sum;
-
-		using apply = typename Execution_Policy::sum;
-
 		Sum(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-		//value_type apply(const Left& l, const Right& r) { return sum(l, r); }
-
-		value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
 	};
 
-	template <typename Left, 
-			  typename Right = Left,
-			  typename Execution_Policy = serial_policy<typename Left::value_type >>
-	class Difference :
-		public expressions::Binary	   <Left, Right,	// Arity
-							Difference <Left, Right>>	// Operation
-	{
-	public:  
-		using apply = typename Execution_Policy::difference;
+	//template <typename Left, 
+	//		  typename Right 
+	//				   =	  std::enable_if
+	//						  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
+	//				   Left>, // Default type is Right = Left
+	//		  typename Execution_Policy = serial_policy <typename Left::value_type>>
+	//class Difference : 
+	//	public expressions::Binary <Left, Right,
+	//						typename Execution_Policy::difference>
+	//{
+	//public:
+	//	Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+	//};
 
-		Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-		//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
-	};
+	//template <typename Left, 
+	//		  typename Right = Left,
+	//		  typename Execution_Policy = serial_policy<typename Left::value_type >>
+	//class Product : 
+	//	public expressions::Binary  <Left, Right,	// Arity
+	//						Product <Left, Right>>	// Operation
+	//{
+	//public:  
+	//	using apply = typename Execution_Policy::product;
 
-	template <typename Left, 
-			  typename Right = Left,
-			  typename Execution_Policy = serial_policy<typename Left::value_type >>
-	class Product : 
-		public expressions::Binary  <Left, Right,	// Arity
-							Product <Left, Right>>	// Operation
-	{
-	public:  
-		using apply = typename Execution_Policy::product;
+	//	Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+	//	//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
+	//};
 
-		Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-		//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
-	};
+	//template <typename Left, 
+	//		  typename Right = Left,
+	//		  typename Execution_Policy = serial_policy<typename Left::value_type >>
+	//class Quotient :
+	//	public expressions::Binary   <Left, Right,	// Arity
+	//						Quotient <Left, Right >>	// Operation
+	//{
+	//public: 
+	//	using apply = typename Execution_Policy::quotient;
 
-	template <typename Left, 
-			  typename Right = Left,
-			  typename Execution_Policy = serial_policy<typename Left::value_type >>
-	class Quotient :
-		public expressions::Binary   <Left, Right,	// Arity
-							Quotient <Left, Right >>	// Operation
-	{
-	public: 
-		using apply = typename Execution_Policy::quotient;
+	//	Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+	//	//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
+	//};
 
-		Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-		//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
-	};
+	//template <typename Left, 
+	//		  typename Right = Left,
+	//		  typename Execution_Policy = serial_policy<typename Left::value_type >>
+	//class Power :
+	//	public expressions::Binary <Left, Right,		// Arity
+	//						Power  <Left, Right >>	// Operation
+	//{
+	//public:  
+	//	using apply = typename Execution_Policy::power;
 
-	template <typename Left, 
-			  typename Right = Left,
-			  typename Execution_Policy = serial_policy<typename Left::value_type >>
-	class Power :
-		public expressions::Binary <Left, Right,		// Arity
-							Power  <Left, Right >>	// Operation
-	{
-	public:  
-		using apply = typename Execution_Policy::power;
-
-		Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-		//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
-	};
+	//	Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+	//	//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
+	//};
 
 	/************************/
 	/** Operator Overloads **/
@@ -96,7 +93,7 @@ namespace binary	{
 	{
 		return Sum<Left, Right>(lhs, rhs);
 	}
-
+/*
 	template <typename Left, typename Right>
 	const Difference<Left, Right> operator - (const Left& lhs, const Right& rhs)
 	{
@@ -119,7 +116,7 @@ namespace binary	{
 	const Power<Left, Right> operator ^ (const Left& lhs, const Right& rhs)
 	{
 		return Power<Left, Right>(lhs, rhs);
-	}
+	}*/
 
 } // end namespace binary
 
