@@ -69,7 +69,6 @@ public:
 
 	Binary(const Left& lhs, const Right& rhs) : left(lhs), right(rhs) {}
 
-	// Return expression_iterator wrapper for derived *this.
 	iterator begin() { return iterator(left.begin(), right.begin(), apply); }
 	iterator end()	 { return iterator(left.end(),	 right.end(),	apply); }
 
@@ -115,8 +114,8 @@ public:
 };
 
 // Defines traits for derived specialization Binary
-template <typename L, typename R, class O, class P>
-struct traits<Binary<L, R, O, P>>
+template <typename L, typename R, class P, class O>
+struct traits<Binary<L, R, P, O>>
 {
 	using value_type		   = typename L::value_type;
 	using container_type	   = typename L::container_type;
@@ -132,14 +131,12 @@ struct traits<Binary<L, R, O, P>>
 	using iterator		 = typename iterators
 		::binary_iterator<left_iterator,
 						  right_iterator, 
-						  O,
-						  policy>;
+						  O>;
 
 	using const_iterator = typename iterators
 		::binary_iterator<left_const_iterator,
 						  right_const_iterator, 
-						  O,
-						  policy>;
+						  O>;
 };
 
 // Defines traits for derived specialization Unary

@@ -146,14 +146,17 @@ int main()
 
 	etree::vector<T> c_x(N), c_y(N), c_z(N);
 	c_x.assign(N, 3);
+	c_x[0] = -1;
+	c_y.assign(N, -1);
 	c_z.assign(N, -2);
 
-	Sum<decltype(c_x), decltype(c_y)> sum(c_x, c_y);
+	Sum<decltype(c_x), decltype(c_y)> sum1(c_x, c_y);
+	Sum<decltype(sum1), decltype(c_z)> sum2(sum1, c_z);
 
-	for (auto it = sum.begin(); it != sum.end(); ++it)
+	for (auto it = sum2.cbegin(); it != sum2.cend(); ++it)
 		std::cout << "val = " << *it << std::endl;
 
-	//etree::vector<T> sum = c_x + c_y - c_z;
+	//etree::vector<T> sum = c_x + c_y + c_z;
 
 	//std::cout << "x = " << sum[0] << endl;
 	system("pause");
