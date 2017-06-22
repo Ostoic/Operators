@@ -21,69 +21,77 @@ namespace binary	{
 					   Left>, // Default type is Right = Left
 			  typename Execution_Policy = serial_policy <typename Left::value_type>>
 	class Sum : 
-		public expressions::Binary <Left, Right,
-							Execution_Policy, typename 
-							Execution_Policy::sum>
+		public expressions::Binary <Left, Right, typename
+							Execution_Policy::sum,
+							Execution_Policy>
 	{
 	public:
 		Sum(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
 
-	//template <typename Left, 
-	//		  typename Right 
-	//				   =	  std::enable_if
-	//						  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
-	//				   Left>, // Default type is Right = Left
-	//		  typename Execution_Policy = serial_policy <typename Left::value_type>>
-	//class Difference : 
-	//	public expressions::Binary <Left, Right,
-	//						typename Execution_Policy::difference>
-	//{
-	//public:
-	//	Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	//};
+	template <typename Left, 
+			  typename Right 
+					   =	  std::enable_if
+							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
+					   Left>, // Default type is Right = Left
+			  typename Execution_Policy = serial_policy <typename Left::value_type>>
+	class Difference : 
+		public expressions::Binary <Left, Right, typename
+							Execution_Policy::difference,
+							Execution_Policy>
+	{
+	public:
+		Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+	};
 
-	//template <typename Left, 
-	//		  typename Right = Left,
-	//		  typename Execution_Policy = serial_policy<typename Left::value_type >>
-	//class Product : 
-	//	public expressions::Binary  <Left, Right,	// Arity
-	//						Product <Left, Right>>	// Operation
-	//{
-	//public:  
-	//	using apply = typename Execution_Policy::product;
+	
 
-	//	Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	//	//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
-	//};
+	template <typename Left, 
+			  typename Right 
+					   =	  std::enable_if
+							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
+					   Left>, // Default type is Right = Left
+			  typename Execution_Policy = serial_policy <typename Left::value_type>>
+	class Product :
+		public expressions::Binary <Left, Right, typename
+							Execution_Policy::product,
+							Execution_Policy>
+	{
+	public:
+		Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+	};
+	
 
-	//template <typename Left, 
-	//		  typename Right = Left,
-	//		  typename Execution_Policy = serial_policy<typename Left::value_type >>
-	//class Quotient :
-	//	public expressions::Binary   <Left, Right,	// Arity
-	//						Quotient <Left, Right >>	// Operation
-	//{
-	//public: 
-	//	using apply = typename Execution_Policy::quotient;
+	template <typename Left, 
+			  typename Right 
+					   =	  std::enable_if
+							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
+					   Left>, // Default type is Right = Left
+			  typename Execution_Policy = serial_policy <typename Left::value_type>>
+	class Quotient :
+		public expressions::Binary <Left, Right, typename
+							Execution_Policy::quotient,
+							Execution_Policy>
+	{
+	public:
+		Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+	};
+	
 
-	//	Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	//	//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
-	//};
-
-	//template <typename Left, 
-	//		  typename Right = Left,
-	//		  typename Execution_Policy = serial_policy<typename Left::value_type >>
-	//class Power :
-	//	public expressions::Binary <Left, Right,		// Arity
-	//						Power  <Left, Right >>	// Operation
-	//{
-	//public:  
-	//	using apply = typename Execution_Policy::power;
-
-	//	Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	//	//value_type operator [] (std::size_t i) const { return apply(_lhs[i], _rhs[i]); }
-	//};
+	template <typename Left, 
+			  typename Right 
+					   =	  std::enable_if
+							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
+					   Left>, // Default type is Right = Left
+			  typename Execution_Policy = serial_policy <typename Left::value_type>>
+	class Power :
+		public expressions::Binary <Left, Right, typename
+							Execution_Policy::power,
+							Execution_Policy>
+	{
+	public:
+		Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
+	};
 
 	/************************/
 	/** Operator Overloads **/
@@ -93,7 +101,7 @@ namespace binary	{
 	{
 		return Sum<Left, Right>(lhs, rhs);
 	}
-/*
+
 	template <typename Left, typename Right>
 	const Difference<Left, Right> operator - (const Left& lhs, const Right& rhs)
 	{
@@ -116,7 +124,7 @@ namespace binary	{
 	const Power<Left, Right> operator ^ (const Left& lhs, const Right& rhs)
 	{
 		return Power<Left, Right>(lhs, rhs);
-	}*/
+	}
 
 } // end namespace binary
 

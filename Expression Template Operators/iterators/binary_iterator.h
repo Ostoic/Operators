@@ -21,7 +21,7 @@ public:
 
 	BinaryFunction functor() const { return function; }
 
-	const Left_Iterator& left_base() const { return left; }
+	const Left_Iterator& left_base()   const { return left; }
 	const Right_Iterator& right_base() const { return right; }
 
 protected:
@@ -40,11 +40,12 @@ protected:
 template <class Left_Iterator,
 		  class Right_Iterator,
 		  class BinaryFunction>
-class binary_iterator // serial execution policy
-					  :													 // extends binary_iterator_base
+class binary_iterator : // serial execution policy
+						// extends binary_iterator_base
 	  public binary_iterator_base <Left_Iterator, 
 								   Right_Iterator, 
-								   BinaryFunction> 
+								   BinaryFunction>,
+	  public std::iterator <std::bidirectional_iterator_tag, typename Left_Iterator::value_type>
 {
 public:
 	using value_type = typename Left_Iterator::value_type;

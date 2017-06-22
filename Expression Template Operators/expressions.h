@@ -48,10 +48,10 @@ public:
 // Holds the binary expression of two objects. 
 template <typename Left,
 		  typename Right,
-		  class	   Policy,
-		  class	   Operator>
+		  class	   Operator,
+		  class	   Policy>
 class Binary :
-	public Expression <Binary <Left, Right, Policy, Operator>>
+	public Expression <Binary <Left, Right, Operator, Policy>>
 {
 protected:
 	const Left& left;
@@ -83,9 +83,10 @@ public:
 // Example: element[i]
 // Example: log(element[i])
 template <typename Exp,
-		  class	   Operator>
+		  class	   Operator,
+		  class	   Policy>
 class Unary :
-	public Expression <Unary <Exp, Operator >>
+	public Expression <Unary <Exp, Operator, Policy>>
 {
 protected:
 	const Exp& expression;
@@ -114,8 +115,8 @@ public:
 };
 
 // Defines traits for derived specialization Binary
-template <typename L, typename R, class P, class O>
-struct traits<Binary<L, R, P, O>>
+template <typename L, typename R, class O, class P>
+struct traits<Binary<L, R, O, P>>
 {
 	using value_type		   = typename L::value_type;
 	using container_type	   = typename L::container_type;
@@ -140,8 +141,8 @@ struct traits<Binary<L, R, P, O>>
 };
 
 // Defines traits for derived specialization Unary
-template <typename T, class O>
-struct traits<Unary<T, O>>
+template <typename T, class O, class P>
+struct traits<Unary<T, O, P>>
 {
 	using value_type		  = typename T::value_type;
 	using container_type	  = typename T::container_type;
