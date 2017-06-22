@@ -17,6 +17,9 @@ std::vector<double> etree_stl_result;
 std::vector<double> std_result;
 std::vector<double> loop_result;
 
+const double pi = 3.14159265358979323846;
+const double pi2 = pi*pi;
+
 using std::endl;
 
 #define DURATION(timer) timer.nanoseconds().to_seconds()
@@ -26,7 +29,7 @@ double test(const V* _x, const V* _y, Out* output)
 {
 	using namespace vector_operators::vector;
 	using namespace etree::operators::binary;
-	//using namespace etree::operators::unary;
+	using namespace etree::operators::unary;
 
 	Stopwatch timer;
 
@@ -34,8 +37,14 @@ double test(const V* _x, const V* _y, Out* output)
 	const V& x = *_x;
 	const V& y = *_y;
 
+	V v_1(N), v_2(N), v_pi(N), v_pi2(N);
+	v_1.assign(N, 1);
+	v_2.assign(N, 2);
+	v_pi.assign(N, pi);
+	v_pi2.assign(N, pi2);
+
 	timer.start();
-	const V result = y - x + (x*x - y) * y - x + (x*x - y) / (x * y + x + y) + (x + y - y * y *x * x * y);
+	const V result = - (v_2 + v_pi2 * x * (v_1 - x)) * cos (v_pi * y);
 	timer.stop();
 
 	*output = result;
@@ -55,7 +64,7 @@ double test_Loop(const V* _x, const V* _y, Out* output)
 	timer.start();
 	T* result = new T[N];
 	for (unsigned int j = 0; j < N; j++)
-		result[j] = y[j] - x[j] + (x[j] * x[j] - y[j]) *  y[j] - x[j] + (x[j] * x[j] - y[j]) / (x[j] * y[j] + x[j] + y[j]) + (x[j] + y[j] - y[j] * y[j] * x[j] * x[j] * y[j]);
+		result[j] = - (2 + pi2 * x[j] * (1 - x[j])) * cos (pi * y[j]);
 
 	timer.stop();
 
@@ -106,17 +115,22 @@ void runTests()
 	etree::vector<T> c_x, c_y;
 	etree::vector<T, etree::constructors::STL> stl_x, stl_y;
 
-	RuntimeTest<double> etree_loop(sizes), etree__stl(sizes), std(sizes);
+	RuntimeTest<double> etree_loop(sizes), etree_stl(sizes), etree_thrust(sizes), std(sizes);
 
 	etree_loop.storeSetup(setup<etree::vector<T>>, &c_x, &c_y);
 	etree_loop.storeTest("Operators_ETree_Loop_times.txt", test<etree::vector<T>, Vec>, &c_x, &c_y, &etree_loop_result);
 	etree_loop.runAll(10);
 	etree_loop.save();
 
-	etree__stl.storeSetup(setup<etree::vector<T, etree::constructors::STL>>, &stl_x, &stl_y);
-	etree__stl.storeTest("Operators_ETree_STL_times.txt", test<etree::vector<T, etree::constructors::STL>, Vec>, &stl_x, &stl_y, &etree_stl_result);
-	etree__stl.runAll(10);
-	etree__stl.save();
+	etree_stl.storeSetup(setup<etree::vector<T, etree::constructors::STL>>, &stl_x, &stl_y);
+	etree_stl.storeTest("Operators_ETree_STL_times.txt", test<etree::vector<T, etree::constructors::STL>, Vec>, &stl_x, &stl_y, &etree_stl_result);
+	etree_stl.runAll(10);
+	etree_stl.save();
+			
+	/*etree_thrust.storeSetup(setup<etree::vector<T, etree::constructors::STL>>, &stl_x, &stl_y);
+	etree_thrust.storeTest("Operators_ETree_STL_times.txt", test<etree::vector<T, etree::constructors::STL>, Vec>, &stl_x, &stl_y, &etree_stl_result);
+	etree_thrust.runAll(10);
+	etree_thrust.save();*/
 
 	std.storeSetup(setup<std::vector<T>>, &x, &y);
 	std.storeTest("Operators_STD_times.txt", test<std::vector<T>, Vec>, &x, &y, &std_result);
@@ -124,16 +138,30 @@ void runTests()
 	std.runAll(10);
 	std.save();
 
-	std::cout << "Answers are equal: " << std::to_string(
-		(std_result == etree_loop_result) &&
-		(std_result == etree_stl_result) &&
-		(std_result == loop_result))  
-		<< endl;
+	std::cout << "Equality of Answers:"
+			  << endl
+			  << "loop_result == etree_loop_result: " 
+			  <<  std::to_string(loop_result == etree_loop_result) 
+			  << endl
 
-	std::cout << "STD: "		<< std_result[0]		<< endl
-			  << "Loop: "		<< loop_result[0]		<< endl
-			  << "ETree STL: "	<< etree_stl_result[0]	<< endl
-			  << "ETree Loop: " << etree_loop_result[0] << endl;
+			  << "loop_result == etree_stl_result: " 
+			  <<  std::to_string(loop_result == etree_stl_result) 
+			  << endl
+
+			  << "loop_result == std_result: " 
+			  <<  std::to_string(loop_result == std_result) 
+			  << endl;
+
+	std::cout << "STD: "		<< std_result[900]			<< endl
+			  << "Loop: "		<< loop_result[900]			<< endl
+			  << "ETree STL: "	<< etree_stl_result[900]	<< endl
+			  << "ETree Loop: " << etree_loop_result[900]	<< endl;
+
+	std::cout << "Result vector sizes:"		<< endl;
+	std::cout << "loop_result size: "		<< loop_result.size()		<< endl;
+	std::cout << "std_result size: "		<< std_result.size()		<< endl;
+	std::cout << "etree_loop_result size: " << etree_loop_result.size() << endl;
+	std::cout << "etree_stl_result size: "	<< etree_stl_result.size()	<< endl;
 }
 
 int main()

@@ -132,12 +132,16 @@ struct traits<Binary<L, R, O, P>>
 	using iterator		 = typename iterators
 		::binary_iterator<left_iterator,
 						  right_iterator, 
-						  O>;
+						  value_type,
+						  O,
+						  policy>;
 
 	using const_iterator = typename iterators
 		::binary_iterator<left_const_iterator,
 						  right_const_iterator, 
-						  O>;
+						  value_type,
+						  O,
+						  policy>;
 };
 
 // Defines traits for derived specialization Unary
@@ -150,8 +154,10 @@ struct traits<Unary<T, O, P>>
 	using base_iterator		  = typename T::iterator;
 	using const_base_iterator = typename T::const_iterator;
 
-	using iterator			  = typename iterators::unary_iterator<base_iterator, O>;
-	using const_iterator	  = typename iterators::unary_iterator<const_base_iterator, O>;
+	using policy = P;
+
+	using iterator			  = typename iterators::unary_iterator<base_iterator, value_type, O, policy>;
+	using const_iterator	  = typename iterators::unary_iterator<const_base_iterator, value_type, O, policy>;
 };
 	
 } // end namespace expressions

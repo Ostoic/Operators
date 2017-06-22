@@ -30,3 +30,9 @@
 #else
 #	define IF_USING_THRUST(code)
 #endif
+
+#ifdef ETREE_USING_THRUST
+#	define NOT_USING_THRUST(code)
+#else
+#	define NOT_USING_THRUST(code) code
+#endif

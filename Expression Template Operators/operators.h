@@ -60,7 +60,6 @@ namespace binary	{
 	public:
 		Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
-	
 
 	template <typename Left, 
 			  typename Right 
@@ -76,7 +75,6 @@ namespace binary	{
 	public:
 		Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
-	
 
 	template <typename Left, 
 			  typename Right 
@@ -131,110 +129,85 @@ namespace binary	{
 // Note: When we define a unary expression, we use the using directive to 
 // ensure the default function to be used. Otherwise, ADL will (hopefully) take care of 
 // the proper lookup.
-//namespace unary
-//{
-//	/*************************************/
-//	/** Expression Specializations **/
-//	/*************************************/
-//	template <typename Exp>
-//	class Negate : 
-//		public expressions::Unary  <Exp,	// Arity
-//							Negate <Exp>>	// Operation
-//	{
-//	public:  
-//		Negate(const Exp& val) : Unary(val) {}
-//		value_type operator [] (std::size_t i) const { return -expression[i]; }
-//	};
-//
-//	template <typename Exp>
-//	class Log :
-//		public expressions::Unary <Exp,	// Arity
-//							Log   <Exp >>	// Operation
-//	{
-//	public:  
-//		Log(const Exp& exp) : Unary(exp) {}
-//		value_type operator [] (std::size_t i) const
-//		{
-//			using std::log;
-//			return log(expression[i]);
-//		}
-//	};
-//
-//	template <typename Exp>
-//	class Sin : 
-//		public expressions::Unary <Exp,	// Arity
-//							Sin   <Exp >>	// Operation
-//	{
-//	public:  
-//		Sin(const Exp& exp) : Unary(exp) {}
-//		value_type operator [] (std::size_t i) const
-//		{
-//			using std::sin;
-//			return sin(expression[i]);
-//		}
-//	};
-//
-//	template <typename Exp>
-//	class Cos :
-//		public expressions::Unary <Exp,	// Arity
-//							Cos   <Exp >>	// Operation
-//	{
-//	public: 
-//		Cos(const Exp& exp) : Unary(exp) {}
-//		value_type operator [] (std::size_t i) const
-//		{
-//			using std::cos;
-//			return cos(expression[i]);
-//		}
-//	};
-//
-//	template <typename Exp>
-//	class Tan : 
-//		public expressions::Unary <Exp,	// Arity
-//							Tan   <Exp>>	// Operation
-//	{
-//	public:  
-//		Tan(const Exp& exp) : Unary(exp) {}
-//		value_type operator [] (std::size_t i) const
-//		{
-//			using std::tan;
-//			return tan(expression[i]);
-//		}
-//	};
-//
-//	/***********************/
-//	/** Operator Overloads **/
-//	/***********************/
-//	template <typename E>
-//	const Negate<E> operator - (const E& vec)
-//	{
-//		return Negate<E>(vec);
-//	}
-//
-//	template <typename E>
-//	const Cos<E> cos(const E& vec)
-//	{
-//		return Cos<E>(vec);
-//	}
-//
-//	template <typename E>
-//	const Sin<E> sin(const E& vec)
-//	{
-//		return Sin<E>(vec);
-//	}
-//
-//	template <typename E>
-//	const Tan<E> tan(const E& vec)
-//	{
-//		return Tan<E>(vec);
-//	}
-//
-//	template <typename E>
-//	const Log<E> log(const E& vec)
-//	{
-//		return Log<E>(vec);
-//	}
-//}
+namespace unary
+{
+	/*************************************/
+	/** Expression Specializations **/
+	/*************************************/
+
+	template <typename Type, 
+			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+	struct Sin :
+		public expressions::Unary <Type, typename
+							Execution_Policy::sin,
+							Execution_Policy>
+	{ Sin(const Type& value) : Unary(value) {} };
+	
+	template <typename Type, 
+			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+	struct Cos :
+		public expressions::Unary <Type, typename
+							Execution_Policy::cos,
+							Execution_Policy>
+	{ Cos(const Type& value) : Unary(value) {} };
+	
+	template <typename Type, 
+			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+	struct Tan :
+		public expressions::Unary <Type, typename
+							Execution_Policy::tan,
+							Execution_Policy>
+	{ Tan(const Type& value) : Unary(value) {} };
+	
+	template <typename Type, 
+			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+	struct Log :
+		public expressions::Unary <Type, typename
+							Execution_Policy::log,
+							Execution_Policy>
+	{ Log(const Type& value) : Unary(value) {} };
+	
+	template <typename Type, 
+			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+	struct Negate :
+		public expressions::Unary <Type, typename
+							Execution_Policy::negate,
+							Execution_Policy>
+	{ Negate(const Type& value) : Unary(value) {} };
+
+	/***********************/
+	/** Operator Overloads **/
+	/***********************/
+	template <typename E>
+	const Negate<E> operator - (const E& vec)
+	{
+		return Negate<E>(vec);
+	}
+
+	template <typename E>
+	const Cos<E> cos(const E& vec)
+	{
+		return Cos<E>(vec);
+	}
+
+	template <typename E>
+	const Sin<E> sin(const E& vec)
+	{
+		return Sin<E>(vec);
+	}
+
+	template <typename E>
+	const Tan<E> tan(const E& vec)
+	{
+		return Tan<E>(vec);
+	}
+
+	template <typename E>
+	const Log<E> log(const E& vec)
+	{
+		return Log<E>(vec);
+	}
+}
 
 namespace scalar
 {

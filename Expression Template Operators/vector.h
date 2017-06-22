@@ -2,6 +2,8 @@
 
 #include "operators.h"
 #include "iterators.h"
+#include "execution_policy.h"
+#include "config\config.h"
 
 #include <vector>
 #include <algorithm>
@@ -30,27 +32,31 @@ protected:
 class STL
 {
 protected:
-/*
-	template <typename Exp>
-	struct Traverse_ETree
-	{
-		const Exp& expression;
-
-		Traverse_ETree(const Exp& e) : expression(e) {}
-
-		Exp::value_type operator ()(const Exp::value_type& x)
-		{
-			return x;
-		}
-	};*/
-
 	template <class Container, class Exp>
 	void ctor(Container& c, const Exp& expression)
 	{
-
-		//std::transform(expression.cbegin(), expression.cend(), c.begin(), 
-		//std::generate(c.begin(), c.end(), Traverse_ETree<Exp>(expression));
 		std::copy(expression.cbegin(), expression.cend(), c.begin());
+	}
+
+	template <class Container, class Exp>
+	void assignment(Container &c, const Exp& e)
+	{
+		ctor(c, e);
+	}
+};
+
+class Thrust
+{
+protected:
+	template <class Container, class Exp>
+	void ctor(Container& c, const Exp& expression)
+	{
+		IF_USING_THRUST(
+			thrust::copy(expression.cbegin(), expression.cend(), c.begin()));
+
+		NOT_USING_THRUST(
+			std::copy(expression.cbegin(), expression.cend(), c.begin()));
+
 	}
 
 	template <class Container, class Exp>
@@ -69,7 +75,8 @@ protected:
 // This allows for proper parallelization of the etree expressions
 template <typename T, 
 		  typename ConstructPolicy = constructors::Loop,
-		  typename Container = std::vector<T>>
+		  typename Container = std::vector<T>,
+		  typename Execution_Policy = serial_policy<T>>
 class vector : 
 	public  expressions::Expression<etree::vector<T, ConstructPolicy, Container>>,
 	private ConstructPolicy
