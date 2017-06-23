@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iterator>
-#include <boost\iterator\iterator_adaptor.hpp>
 
 #include "..\execution_policy.h"
 #include "..\config\config.h"
