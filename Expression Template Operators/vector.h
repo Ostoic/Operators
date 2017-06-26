@@ -1,12 +1,14 @@
 #pragma once
 
+#include "detail\config.h"
+
 #include "operators.h"
-#include "iterators.h"
 #include "execution_policy.h"
-#include "config\config.h"
 
 #include <vector>
 #include <algorithm>
+
+#include <thrust\execution_policy.h>
 
 namespace etree		   {
 namespace constructors {
@@ -51,19 +53,12 @@ protected:
 	template <class Container, class Exp>
 	void ctor(Container& c, const Exp& expression)
 	{
-		IF_USING_THRUST(
-			thrust::copy(expression.cbegin(), expression.cend(), c.begin()));
-
-		NOT_USING_THRUST(
-			std::copy(expression.cbegin(), expression.cend(), c.begin()));
-
+		thrust::copy(thrust::device, expression.cbegin(), expression.cend(), c.begin());
 	}
 
 	template <class Container, class Exp>
 	void assignment(Container &c, const Exp& e)
-	{
-		ctor(c, e);
-	}
+	{ ctor(c, e); }
 };
 
 } // end namespace construcors
@@ -74,33 +69,33 @@ protected:
 // Thus, thrust::transform, or a similar method can be used in place of the loop ctor
 // This allows for proper parallelization of the etree expressions
 template <typename T, 
-		  typename ConstructPolicy = constructors::Loop,
-		  typename Container = std::vector<T>,
-		  typename Execution_Policy = serial_policy<T>>
+		  typename ConstructPolicy	= constructors::Loop,
+		  typename Container		= std::vector<T>,
+		  typename Execution_Policy = serial_policy>
 class vector : 
-	public  expressions::Expression<etree::vector<T, ConstructPolicy, Container>>,
+	public  expressions::Expression<etree::vector<T, ConstructPolicy, Container, Execution_Policy>>,
 	private ConstructPolicy
 {
 protected:
 	Container elements;
 
 public:
-	typedef typename expressions
+	using policy		 = typename expressions
 		::traits<vector>
-		::container_type container_type;
+		::policy;
 
-	typedef typename expressions
+	using value_type	 = typename expressions
 		::traits<vector>
-		::value_type value_type;
+		::value_type;
 
 	// Provide interface for STL iteration
-	typedef typename expressions
+	using iterator		 = typename expressions
 		::traits<vector>
-		::iterator iterator;
+		::iterator;
 
-	typedef typename expressions
+	using const_iterator = typename expressions
 		::traits<vector>
-		::const_iterator const_iterator;
+		::const_iterator;
 
 	iterator begin() { return elements.begin(); }
 	iterator end()	 { return elements.end(); }
@@ -125,7 +120,7 @@ public:
 	//vector(const Container& c)  : elements(c) {}
 
 	// The actual evaluation is done here in the constructor for vector
-	// The [] operator is overloaded for the Expression e
+	// We should consider the input expression's execution policy
 	template <typename E>
 	vector(const expressions::Expression<E>& e) :
 		elements(e.size())
@@ -135,7 +130,8 @@ public:
 	vector<T, Container, ConstructPolicy>& operator = (const expressions::Expression<T, E>& e)
 	{ assignment(elements, e); }*/
 
-	operator Container&()			  { return this->elements; }
+	// Allows us to 
+	operator	   Container&()		  { return this->elements; }
 	operator const Container&() const { return this->elements; }
 
 	template <typename U, typename C>
@@ -148,14 +144,14 @@ public:
 // Define traits of vector as an expression
 // This is the vector traits template specialization.
 // Since CRTP typedef vision is limited, we have to rely on the traits idiom.
-template <typename T, class P, typename C>
-struct expressions::traits<etree::vector<T, P, C>>
+template <typename T, class Ctor, typename C, class Exec>
+struct expressions::traits<etree::vector<T, Ctor, C, Exec>>
 {
-	typedef T value_type;
-	typedef C container_type;
+	using value_type	 = T;
 
-	typedef typename C::iterator iterator;
-	typedef typename C::const_iterator const_iterator;
+	using iterator		 = typename C::iterator;
+	using const_iterator = typename C::const_iterator;
+	using policy		 = Exec;
 };
 
 // Vector on the left, container on the right

@@ -2,216 +2,171 @@
 
 #include <cmath>
 
+#include "detail\config.h"
+#include "detail\iterators.h"
+#include "detail\functional.h"
+
 #include "expressions.h"
-#include "iterators.h"
 #include "execution_policy.h"
-#include "config\config.h"
 
 namespace etree		{
 namespace operators {
-namespace binary	{
 
 	/********************************/
-	/** Expression Specializations **/
+	/** Binary Expression Operators**/
 	/********************************/
 	template <typename Left, 
-			  typename Right 
-					   =	  std::enable_if
-							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
-					   Left>, // Default type is Right = Left
-			  typename Execution_Policy = serial_policy <typename Left::value_type>>
-	class Sum : 
-		public expressions::Binary <Left, Right, typename
-							Execution_Policy::sum,
-							Execution_Policy>
-	{
-	public:
-		Sum(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	};
+			  typename Right = Left,
+			  typename Execution_Policy = serial_policy>
+	struct Sum :
+		public expressions::Binary <Left, Right, etree::sum <typename Left::value_type>, Execution_Policy>
+	{ Sum(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {} };
 
-	template <typename Left, 
-			  typename Right 
-					   =	  std::enable_if
-							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
-					   Left>, // Default type is Right = Left
-			  typename Execution_Policy = serial_policy <typename Left::value_type>>
-	class Difference : 
-		public expressions::Binary <Left, Right, typename
-							Execution_Policy::difference,
-							Execution_Policy>
+	template <typename Left,
+		typename Right = Left,
+		typename Execution_Policy = serial_policy>
+	struct Difference :
+		public expressions::Binary <Left, Right, etree::difference <typename Left::value_type>, Execution_Policy>
 	{
-	public:
 		Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
 
-	
-
-	template <typename Left, 
-			  typename Right 
-					   =	  std::enable_if
-							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
-					   Left>, // Default type is Right = Left
-			  typename Execution_Policy = serial_policy <typename Left::value_type>>
-	class Product :
-		public expressions::Binary <Left, Right, typename
-							Execution_Policy::product,
-							Execution_Policy>
+	template <typename Left,
+		typename Right = Left,
+		typename Execution_Policy = serial_policy>
+	struct Product :
+		public expressions::Binary <Left, Right, etree::product <typename Left::value_type>, Execution_Policy>
 	{
-	public:
 		Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
 
-	template <typename Left, 
-			  typename Right 
-					   =	  std::enable_if
-							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
-					   Left>, // Default type is Right = Left
-			  typename Execution_Policy = serial_policy <typename Left::value_type>>
-	class Quotient :
-		public expressions::Binary <Left, Right, typename
-							Execution_Policy::quotient,
-							Execution_Policy>
+	template <typename Left,
+		typename Right = Left,
+		typename Execution_Policy = serial_policy>
+	struct Quotient :
+		public expressions::Binary <Left, Right, etree::quotient <typename Left::value_type>, Execution_Policy>
 	{
-	public:
 		Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
 
-	template <typename Left, 
-			  typename Right 
-					   =	  std::enable_if
-							  <std::is_convertible<Left::value_type, Right::value_type>::value, // Make sure left and right scalar types are convertible between eachother
-					   Left>, // Default type is Right = Left
-			  typename Execution_Policy = serial_policy <typename Left::value_type>>
-	class Power :
-		public expressions::Binary <Left, Right, typename
-							Execution_Policy::power,
-							Execution_Policy>
+	template <typename Left,
+		typename Right = Left,
+		typename Execution_Policy = serial_policy>
+	struct Power :
+		public expressions::Binary <Left, Right, etree::power <typename Left::value_type>, Execution_Policy>
 	{
-	public:
 		Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
 
-	/************************/
-	/** Operator Overloads **/
-	/************************/
-	template <typename Left, typename Right>
-	const Sum<Left, Right> operator + (const Left& lhs, const Right& rhs)
-	{
-		return Sum<Left, Right>(lhs, rhs);
-	}
-
-	template <typename Left, typename Right>
-	const Difference<Left, Right> operator - (const Left& lhs, const Right& rhs)
-	{
-		return Difference<Left, Right>(lhs, rhs);
-	}
-
-	template <typename Left, typename Right>
-	const Product<Left, Right> operator * (const Left& lhs, const Right& rhs)
-	{
-		return Product<Left, Right>(lhs, rhs);
-	}
-
-	template <typename Left, typename Right>
-	const Quotient<Left, Right> operator / (const Left& lhs, const Right& rhs)
-	{
-		return Quotient<Left, Right>(lhs, rhs);
-	}
-
-	template <typename Left, typename Right>
-	const Power<Left, Right> operator ^ (const Left& lhs, const Right& rhs)
-	{
-		return Power<Left, Right>(lhs, rhs);
-	}
-
-} // end namespace binary
-
-// Note: When we define a unary expression, we use the using directive to 
-// ensure the default function to be used. Otherwise, ADL will (hopefully) take care of 
-// the proper lookup.
-namespace unary
-{
-	/*************************************/
-	/** Expression Specializations **/
-	/*************************************/
+	/********************************/
+	/** Unary Expression Operators **/
+	/********************************/
 
 	template <typename Type, 
-			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+			  typename Execution_Policy = serial_policy>
 	struct Sin :
-		public expressions::Unary <Type, typename
-							Execution_Policy::sin,
-							Execution_Policy>
+		public expressions::Unary <Type, etree::sin <typename Type::value_type>, Execution_Policy>
 	{ Sin(const Type& value) : Unary(value) {} };
 	
 	template <typename Type, 
-			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+			  typename Execution_Policy = serial_policy>
 	struct Cos :
-		public expressions::Unary <Type, typename
-							Execution_Policy::cos,
-							Execution_Policy>
+		public expressions::Unary <Type, etree::cos <typename Type::value_type>, Execution_Policy>
 	{ Cos(const Type& value) : Unary(value) {} };
 	
 	template <typename Type, 
-			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+			  typename Execution_Policy = serial_policy>
 	struct Tan :
-		public expressions::Unary <Type, typename
-							Execution_Policy::tan,
-							Execution_Policy>
+		public expressions::Unary <Type, etree::tan <typename Type::value_type>, Execution_Policy>
 	{ Tan(const Type& value) : Unary(value) {} };
 	
 	template <typename Type, 
-			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+			  typename Execution_Policy = serial_policy>
 	struct Log :
-		public expressions::Unary <Type, typename
-							Execution_Policy::log,
-							Execution_Policy>
+		public expressions::Unary <Type, etree::log <typename Type::value_type>, Execution_Policy>
 	{ Log(const Type& value) : Unary(value) {} };
 	
 	template <typename Type, 
-			  typename Execution_Policy = serial_policy <typename Type::value_type>>
+			  typename Execution_Policy = serial_policy>
 	struct Negate :
-		public expressions::Unary <Type, typename
-							Execution_Policy::negate,
-							Execution_Policy>
+		public expressions::Unary <Type, etree::negate <typename Type::value_type>, Execution_Policy>
 	{ Negate(const Type& value) : Unary(value) {} };
 
-	/***********************/
-	/** Operator Overloads **/
-	/***********************/
-	template <typename E>
-	const Negate<E> operator - (const E& vec)
+	/*******************************/
+	/** Binary Operator Overloads **/
+	/*******************************/
+	template <typename Left, typename Right>
+	const Sum<Left, Right, typename Left::policy> operator + (const Left& lhs, const Right& rhs)
 	{
-		return Negate<E>(vec);
+		using Policy = typename Left::policy;
+		return Sum<Left, Right, Policy>(lhs, rhs);
+	}
+
+	template <typename Left, typename Right>
+	const Difference<Left, Right, typename Left::policy> operator - (const Left& lhs, const Right& rhs)
+	{
+		using Policy = typename Left::policy;
+		return Difference<Left, Right, Policy>(lhs, rhs);
+	}
+
+	template <typename Left, typename Right>
+	const Product<Left, Right, typename Left::policy>	  operator * (const Left& lhs, const Right& rhs)
+	{
+		using Policy = typename Left::policy;
+		return Product<Left, Right, Policy>(lhs, rhs);
+	}
+
+	template <typename Left, typename Right>
+	const Quotient<Left, Right, typename Left::policy>   operator / (const Left& lhs, const Right& rhs)
+	{
+		using Policy = typename Left::policy;
+		return Quotient<Left, Right, Policy>(lhs, rhs);
+	}
+
+	template <typename Left, typename Right>
+	const Power<Left, Right, typename Left::policy>	  operator ^ (const Left& lhs, const Right& rhs)
+	{
+		using Policy = typename Left::policy;
+		return Power<Left, Right, Policy>(lhs, rhs);
+	}
+
+	/******************************/
+	/** Unary Operator Overloads **/
+	/******************************/
+	template <typename E>
+	const Negate<E, typename E::policy> operator -(const E& vec)
+	{
+		using Policy = typename E::policy;
+		return Negate<E, Policy>(vec);
 	}
 
 	template <typename E>
-	const Cos<E> cos(const E& vec)
+	const Cos<E, typename E::policy> cos(const E& vec)
 	{
-		return Cos<E>(vec);
+		using Policy = typename E::policy;
+		return Cos<E, Policy>(vec);
 	}
 
 	template <typename E>
-	const Sin<E> sin(const E& vec)
+	const Sin<E, typename E::policy> sin(const E& vec)
 	{
-		return Sin<E>(vec);
+		using Policy = typename E::policy;
+		return Sin<E, Policy>(vec);
 	}
 
 	template <typename E>
-	const Tan<E> tan(const E& vec)
+	const Tan<E, typename E::policy> tan(const E& vec)
 	{
-		return Tan<E>(vec);
+		using Policy = typename E::policy;
+		return Tan<E, Policy>(vec);
 	}
 
 	template <typename E>
-	const Log<E> log(const E& vec)
+	const Log<E, typename E::policy> log(const E& vec)
 	{
-		return Log<E>(vec);
+		using Policy = typename E::policy;
+		return Log<E, Policy>(vec);
 	}
-}
 
-namespace scalar
-{
-			
-} // end namespace scalar
 } // end namespace operators
 } // end namespace etree
