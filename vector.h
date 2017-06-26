@@ -141,11 +141,11 @@ public:
 	friend bool operator == (const C& lhs, const vector<U>& rhs);
 };
 
-// Define traits of vector as an expression
+// Define expression_traits of vector as an expression
 // This is the vector traits template specialization.
 // Since CRTP typedef vision is limited, we have to rely on the traits idiom.
 template <typename T, class Ctor, typename C, class Exec>
-struct expressions::traits<etree::vector<T, Ctor, C, Exec>>
+struct expressions::expression_traits<etree::vector<T, Ctor, C, Exec>>
 {
 	using value_type	 = T;
 

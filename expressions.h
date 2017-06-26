@@ -11,16 +11,16 @@ namespace etree		  {
 namespace expressions {
 
 template <typename D>
-struct traits;
+struct expression_traits;
 
 // Represents any operator expression
 template <class Derived>
 class Expression
 {
 public:
-	using iterator		 = typename traits<Derived>::iterator;
-	using const_iterator = typename traits<Derived>::const_iterator;
-	using value_type	 = typename traits<Derived>::value_type;
+	using iterator		 = typename expression_traits<Derived>::iterator;
+	using const_iterator = typename expression_traits<Derived>::const_iterator;
+	using value_type	 = typename expression_traits<Derived>::value_type;
 
 	// Forward the iterator interface downwards until we have enough 
 	// class data to define a proper iterator type
@@ -55,10 +55,10 @@ protected:
 	Operator apply;
 
 public:
-	using policy		 = typename traits<Binary>::policy;
-	using iterator		 = typename traits<Binary>::iterator;
-	using const_iterator = typename traits<Binary>::const_iterator;
-	using value_type	 = typename traits<Binary>::value_type;
+	using policy		 = typename expression_traits<Binary>::policy;
+	using iterator		 = typename expression_traits<Binary>::iterator;
+	using const_iterator = typename expression_traits<Binary>::const_iterator;
+	using value_type	 = typename expression_traits<Binary>::value_type;
 
 	Binary(const Left& lhs, const Right& rhs) : left(lhs), right(rhs) {}
 
@@ -114,11 +114,11 @@ protected:
 
 public:
 	// STL iterator interface
-	using policy		 = typename traits<Unary>::policy;
-	using value_type	 = typename traits<Unary>::value_type;
+	using policy		 = typename expression_traits<Unary>::policy;
+	using value_type	 = typename expression_traits<Unary>::value_type;
 
-	using iterator		 = typename traits<Unary>::iterator;
-	using const_iterator = typename traits<Unary>::const_iterator;
+	using iterator		 = typename expression_traits<Unary>::iterator;
+	using const_iterator = typename expression_traits<Unary>::const_iterator;
 
 	Unary(const Exp& exp) : expression(exp) {}
 
@@ -146,9 +146,9 @@ public:
 	value_type operator [] (std::size_t i) const { return apply(expression[i]); }
 };
 
-// Defines traits for derived specialization Binary
+// Defines expression_traits for derived specialization Binary
 template <typename L, typename R, class O, class P>
-struct traits<Binary<L, R, O, P>>
+struct expression_traits<Binary<L, R, O, P>>
 {
 	using policy = P;
 
@@ -169,9 +169,9 @@ struct traits<Binary<L, R, O, P>>
 		  ::template type<O, left_const_iterator, right_const_iterator>;
 };
 
-// Defines traits for derived specialization Unary
+// Defines expression_traits for derived specialization Unary
 template <typename T, class O, class P>
-struct traits<Unary<T, O, P>>
+struct expression_traits<Unary<T, O, P>>
 {
 	using policy = P;
 
