@@ -81,20 +81,20 @@ protected:
 
 public:
 	using policy		 = typename expressions
-		::traits<vector>
+		::expression_traits<vector>
 		::policy;
 
 	using value_type	 = typename expressions
-		::traits<vector>
+		::expression_traits<vector>
 		::value_type;
 
 	// Provide interface for STL iteration
 	using iterator		 = typename expressions
-		::traits<vector>
+		::expression_traits<vector>
 		::iterator;
 
 	using const_iterator = typename expressions
-		::traits<vector>
+		::expression_traits<vector>
 		::const_iterator;
 
 	iterator begin() { return elements.begin(); }
