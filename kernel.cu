@@ -15,10 +15,10 @@
 #include "operators.h"
 #include "expressions.h"
 
-thrust::device_vector<double> etree_thrust_result;
+thrust::device_vector<double> vap_thrust_result;
 thrust::device_vector<double> thrust_std_result;
-std::vector<double> etree_loop_result;
-std::vector<double> etree_stl_result;
+std::vector<double> vap_loop_result;
+std::vector<double> vap_stl_result;
 std::vector<double> std_result;
 std::vector<double> loop_result;
 
@@ -34,8 +34,8 @@ double test(const V* _x, const V* _y, Out* output)
 {
 	using namespace vector_operators::vector;
 	using namespace thrust_operators::vector;
-	using namespace etree::operators::binary;
-	using namespace etree::operators::unary;
+	using namespace vap::operators::binary;
+	using namespace vap::operators::unary;
 
 	Stopwatch timer;
 
@@ -119,31 +119,31 @@ void runTests()
 
 	Vec x, y;
 	DVec d_x, d_y;
-	etree::vector<T> c_x, c_y;
-	etree::vector<T, etree::constructors::STL> stl_x, stl_y;
-	etree::vector<T, etree::constructors::Thrust, DVec, etree::parallel_policy> ed_x, ed_y;
+	vap::vector<T> c_x, c_y;
+	vap::vector<T, vap::constructors::STL> stl_x, stl_y;
+	vap::vector<T, vap::constructors::Thrust, DVec, vap::parallel_policy> ed_x, ed_y;
 
-	RuntimeTest<double> etree_loop(sizes), etree_stl(sizes), etree_thrust(sizes), thrust_std(sizes), std(sizes);
+	RuntimeTest<double> vap_loop(sizes), vap_stl(sizes), vap_thrust(sizes), thrust_std(sizes), std(sizes);
 
-	etree_loop.storeSetup(setup<decltype(c_x)>, &c_x, &c_y);
-	etree_loop.storeTest("Operators_ETree_Loop_times.txt", test<decltype(c_x), Vec>, &c_x, &c_y, &etree_loop_result);
-	etree_loop.runAll(10);
-	etree_loop.save();
+	vap_loop.storeSetup(setup<decltype(c_x)>, &c_x, &c_y);
+	vap_loop.storeTest("Operators_vap_Loop_times.txt", test<decltype(c_x), Vec>, &c_x, &c_y, &vap_loop_result);
+	vap_loop.runAll(10);
+	vap_loop.save();
 
-	//etree_stl.storeSetup(setup<decltype(stl_x)>, &stl_x, &stl_y);
-	//etree_stl.storeTest("Operators_ETree_STL_times.txt", test<decltype(stl_x), Vec>, &stl_x, &stl_y, &etree_stl_result);
-	//etree_stl.runAll(10);
-	//etree_stl.save();
+	//vap_stl.storeSetup(setup<decltype(stl_x)>, &stl_x, &stl_y);
+	//vap_stl.storeTest("Operators_vap_STL_times.txt", test<decltype(stl_x), Vec>, &stl_x, &stl_y, &vap_stl_result);
+	//vap_stl.runAll(10);
+	//vap_stl.save();
 
 	thrust_std.storeSetup(setup<decltype(d_x)>, &d_x, &d_y);
 	thrust_std.storeTest("Operators_Thrust_Std_times.txt", test<decltype(d_x), DVec>, &d_x, &d_y, &thrust_std_result);
 	thrust_std.runAll(10);
 	thrust_std.save();
 
-	etree_thrust.storeSetup(setup<decltype(ed_x)>, &ed_x, &ed_y);
-	etree_thrust.storeTest("Operators_ETree_Thrust_times.txt", test<decltype(ed_x), DVec>, &ed_x, &ed_y, &etree_thrust_result);
-	etree_thrust.runAll(10);
-	etree_thrust.save();
+	vap_thrust.storeSetup(setup<decltype(ed_x)>, &ed_x, &ed_y);
+	vap_thrust.storeTest("Operators_vap_Thrust_times.txt", test<decltype(ed_x), DVec>, &ed_x, &ed_y, &vap_thrust_result);
+	vap_thrust.runAll(10);
+	vap_thrust.save();
 
 	std.storeSetup(setup<Vec>, &x, &y);
 	std.storeTest("Operators_STD_times.txt", test<Vec, Vec>, &x, &y, &std_result);
@@ -151,28 +151,28 @@ void runTests()
 	std.runAll(10);
 	std.save();
 
-	Vec etree_thrust_host(etree_thrust_result.size());
-	Vec thrust_std_host(etree_thrust_result.size());
+	Vec vap_thrust_host(vap_thrust_result.size());
+	Vec thrust_std_host(vap_thrust_result.size());
 
-	thrust::copy(etree_thrust_result.begin(), etree_thrust_result.end(), etree_thrust_host.begin());
+	thrust::copy(vap_thrust_result.begin(), vap_thrust_result.end(), vap_thrust_host.begin());
 	thrust::copy(thrust_std_result.begin(), thrust_std_result.end(), thrust_std_host.begin());
 
 	std::cout << "Equality of Answers:"
 		<< endl
-		<< "loop_result == etree_loop_result: "
-		<< std::to_string(loop_result == etree_loop_result)
+		<< "loop_result == vap_loop_result: "
+		<< std::to_string(loop_result == vap_loop_result)
 		<< endl
 
-		/*<< "loop_result == etree_stl_result: "
-		<< std::to_string(loop_result == etree_stl_result)
+		/*<< "loop_result == vap_stl_result: "
+		<< std::to_string(loop_result == vap_stl_result)
 		<< endl*/
 
-		<< "loop_result == etree_thrust_result: "
+		<< "loop_result == vap_thrust_result: "
 		<< std::to_string(loop_result == thrust_std_host)
 		<< endl
 
 		<< "loop_result == thrust_std_result: "
-		<< std::to_string(loop_result == etree_thrust_host)
+		<< std::to_string(loop_result == vap_thrust_host)
 		<< endl
 
 		<< "loop_result == std_result: "
@@ -182,30 +182,30 @@ void runTests()
 	std::cout << "STD: "		<< std_result[900]		  << endl
 			  << "Loop: "		<< loop_result[900]		  << endl
 			  << "Thrust STD: " << thrust_std_host[900] << endl
-			  << "ETree Thrust: " << etree_thrust_host[900] << endl
-			  //<< "ETree STL: "	<< etree_stl_result[900]  << endl
-			  << "ETree Loop: " << etree_loop_result[900] << endl;
+			  << "vap Thrust: " << vap_thrust_host[900] << endl
+			  //<< "vap STL: "	<< vap_stl_result[900]  << endl
+			  << "vap Loop: " << vap_loop_result[900] << endl;
 
 	std::cout << "Result vector sizes:"		<< endl;
 	std::cout << "loop_result size: "		<< loop_result.size() << endl;
 	std::cout << "std_result size: "		<< std_result.size() << endl;
-	std::cout << "etree_loop_result size: " << etree_loop_result.size() << endl;
+	std::cout << "vap_loop_result size: " << vap_loop_result.size() << endl;
 	std::cout << "thrust_std_host size: " << thrust_std_host.size() << endl;
-	std::cout << "etree_thrust_result size: " << etree_thrust_host.size() << endl;
-	//std::cout << "etree_stl_result size: "	<< etree_stl_result.size() << endl;
+	std::cout << "vap_thrust_result size: " << vap_thrust_host.size() << endl;
+	//std::cout << "vap_stl_result size: "	<< vap_stl_result.size() << endl;
 }
 
 int main()
 {
-	using namespace etree::operators::binary;
-	//using namespace etree::operators::unary;
+	using namespace vap::operators::binary;
+	//using namespace vap::operators::unary;
 
 	cudaFree(0);
 	using T		= double;
 	using Vec	= std::vector<T>;
 	using DVec	= thrust::device_vector<T>;
-	using EVec  = etree::vector < T, etree::constructors::STL, Vec, etree::serial_policy>;
-	using EDVec = etree::vector<T, etree::constructors::Thrust, DVec, etree::parallel_policy>;
+	using EVec  = vap::vector < T, vap::constructors::STL, Vec, vap::serial_policy>;
+	using EDVec = vap::vector<T, vap::constructors::Thrust, DVec, vap::parallel_policy>;
 
 	const std::size_t N = 3;
 

@@ -12,8 +12,8 @@
 #include "operators.h"
 #include "expressions.h"
 
-std::vector<double> etree_loop_result;
-std::vector<double> etree_stl_result;
+std::vector<double> vap_loop_result;
+std::vector<double> vap_stl_result;
 std::vector<double> std_result;
 std::vector<double> loop_result;
 
@@ -28,8 +28,8 @@ template <typename V, typename Out>
 double test(const V* _x, const V* _y, Out* output)
 {
 	using namespace vector_operators::vector;
-	using namespace etree::operators::binary;
-	using namespace etree::operators::unary;
+	using namespace vap::operators::binary;
+	using namespace vap::operators::unary;
 
 	Stopwatch timer;
 
@@ -112,25 +112,25 @@ void runTests()
 	const std::size_t N = static_cast<std::size_t>(1e6);
 
 	std::vector<T> x, y;
-	etree::vector<T> c_x, c_y;
-	etree::vector<T, etree::constructors::STL> stl_x, stl_y;
+	vap::vector<T> c_x, c_y;
+	vap::vector<T, vap::constructors::STL> stl_x, stl_y;
 
-	RuntimeTest<double> etree_loop(sizes), etree_stl(sizes), etree_thrust(sizes), std(sizes);
+	RuntimeTest<double> vap_loop(sizes), vap_stl(sizes), vap_thrust(sizes), std(sizes);
 
-	etree_loop.storeSetup(setup<etree::vector<T>>, &c_x, &c_y);
-	etree_loop.storeTest("Operators_ETree_Loop_times.txt", test<etree::vector<T>, Vec>, &c_x, &c_y, &etree_loop_result);
-	etree_loop.runAll(10);
-	etree_loop.save();
+	vap_loop.storeSetup(setup<vap::vector<T>>, &c_x, &c_y);
+	vap_loop.storeTest("Operators_vap_Loop_times.txt", test<vap::vector<T>, Vec>, &c_x, &c_y, &vap_loop_result);
+	vap_loop.runAll(10);
+	vap_loop.save();
 
-	etree_stl.storeSetup(setup<etree::vector<T, etree::constructors::STL>>, &stl_x, &stl_y);
-	etree_stl.storeTest("Operators_ETree_STL_times.txt", test<etree::vector<T, etree::constructors::STL>, Vec>, &stl_x, &stl_y, &etree_stl_result);
-	etree_stl.runAll(10);
-	etree_stl.save();
+	vap_stl.storeSetup(setup<vap::vector<T, vap::constructors::STL>>, &stl_x, &stl_y);
+	vap_stl.storeTest("Operators_vap_STL_times.txt", test<vap::vector<T, vap::constructors::STL>, Vec>, &stl_x, &stl_y, &vap_stl_result);
+	vap_stl.runAll(10);
+	vap_stl.save();
 			
-	/*etree_thrust.storeSetup(setup<etree::vector<T, etree::constructors::STL>>, &stl_x, &stl_y);
-	etree_thrust.storeTest("Operators_ETree_STL_times.txt", test<etree::vector<T, etree::constructors::STL>, Vec>, &stl_x, &stl_y, &etree_stl_result);
-	etree_thrust.runAll(10);
-	etree_thrust.save();*/
+	/*vap_thrust.storeSetup(setup<vap::vector<T, vap::constructors::STL>>, &stl_x, &stl_y);
+	vap_thrust.storeTest("Operators_vap_STL_times.txt", test<vap::vector<T, vap::constructors::STL>, Vec>, &stl_x, &stl_y, &vap_stl_result);
+	vap_thrust.runAll(10);
+	vap_thrust.save();*/
 
 	std.storeSetup(setup<std::vector<T>>, &x, &y);
 	std.storeTest("Operators_STD_times.txt", test<std::vector<T>, Vec>, &x, &y, &std_result);
@@ -140,12 +140,12 @@ void runTests()
 
 	std::cout << "Equality of Answers:"
 			  << endl
-			  << "loop_result == etree_loop_result: " 
-			  <<  std::to_string(loop_result == etree_loop_result) 
+			  << "loop_result == vap_loop_result: " 
+			  <<  std::to_string(loop_result == vap_loop_result) 
 			  << endl
 
-			  << "loop_result == etree_stl_result: " 
-			  <<  std::to_string(loop_result == etree_stl_result) 
+			  << "loop_result == vap_stl_result: " 
+			  <<  std::to_string(loop_result == vap_stl_result) 
 			  << endl
 
 			  << "loop_result == std_result: " 
@@ -154,28 +154,28 @@ void runTests()
 
 	std::cout << "STD: "		<< std_result[900]			<< endl
 			  << "Loop: "		<< loop_result[900]			<< endl
-			  << "ETree STL: "	<< etree_stl_result[900]	<< endl
-			  << "ETree Loop: " << etree_loop_result[900]	<< endl;
+			  << "vap STL: "	<< vap_stl_result[900]	<< endl
+			  << "vap Loop: " << vap_loop_result[900]	<< endl;
 
 	std::cout << "Result vector sizes:"		<< endl;
 	std::cout << "loop_result size: "		<< loop_result.size()		<< endl;
 	std::cout << "std_result size: "		<< std_result.size()		<< endl;
-	std::cout << "etree_loop_result size: " << etree_loop_result.size() << endl;
-	std::cout << "etree_stl_result size: "	<< etree_stl_result.size()	<< endl;
+	std::cout << "vap_loop_result size: " << vap_loop_result.size() << endl;
+	std::cout << "vap_stl_result size: "	<< vap_stl_result.size()	<< endl;
 }
 
 int main()
 {
-	using namespace etree::operators::binary;
-	//using namespace etree::operators::unary;
+	using namespace vap::operators::binary;
+	//using namespace vap::operators::unary;
 
 	typedef double T;
-	typedef etree::vector<T> Vec;
+	typedef vap::vector<T> Vec;
 	const std::size_t N = 3;
 
 	std::vector<T> x, y;
 
-	etree::vector<T, etree::constructors::STL> c_x(N), c_y(N), c_z(N);
+	vap::vector<T, vap::constructors::STL> c_x(N), c_y(N), c_z(N);
 	c_x.assign(N, 3);
 	c_y.assign(N, -1);
 	c_z.assign(N, 4);
