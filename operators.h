@@ -9,7 +9,7 @@
 #include "expressions.h"
 #include "execution_policy.h"
 
-namespace etree		{
+namespace vap		{
 namespace operators {
 
 	/********************************/
@@ -19,14 +19,14 @@ namespace operators {
 			  typename Right = Left,
 			  typename Execution_Policy = serial_policy>
 	struct Sum :
-		public expressions::Binary <Left, Right, etree::sum <typename Left::value_type>, Execution_Policy>
+		public expressions::Binary <Left, Right, vap::sum <typename Left::value_type>, Execution_Policy>
 	{ Sum(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {} };
 
 	template <typename Left,
 		typename Right = Left,
 		typename Execution_Policy = serial_policy>
 	struct Difference :
-		public expressions::Binary <Left, Right, etree::difference <typename Left::value_type>, Execution_Policy>
+		public expressions::Binary <Left, Right, vap::difference <typename Left::value_type>, Execution_Policy>
 	{
 		Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
@@ -35,7 +35,7 @@ namespace operators {
 		typename Right = Left,
 		typename Execution_Policy = serial_policy>
 	struct Product :
-		public expressions::Binary <Left, Right, etree::product <typename Left::value_type>, Execution_Policy>
+		public expressions::Binary <Left, Right, vap::product <typename Left::value_type>, Execution_Policy>
 	{
 		Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
@@ -44,7 +44,7 @@ namespace operators {
 		typename Right = Left,
 		typename Execution_Policy = serial_policy>
 	struct Quotient :
-		public expressions::Binary <Left, Right, etree::quotient <typename Left::value_type>, Execution_Policy>
+		public expressions::Binary <Left, Right, vap::quotient <typename Left::value_type>, Execution_Policy>
 	{
 		Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
@@ -53,7 +53,7 @@ namespace operators {
 		typename Right = Left,
 		typename Execution_Policy = serial_policy>
 	struct Power :
-		public expressions::Binary <Left, Right, etree::power <typename Left::value_type>, Execution_Policy>
+		public expressions::Binary <Left, Right, vap::power <typename Left::value_type>, Execution_Policy>
 	{
 		Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
 	};
@@ -65,31 +65,31 @@ namespace operators {
 	template <typename Type, 
 			  typename Execution_Policy = serial_policy>
 	struct Sin :
-		public expressions::Unary <Type, etree::sin <typename Type::value_type>, Execution_Policy>
+		public expressions::Unary <Type, vap::sin <typename Type::value_type>, Execution_Policy>
 	{ Sin(const Type& value) : Unary(value) {} };
 	
 	template <typename Type, 
 			  typename Execution_Policy = serial_policy>
 	struct Cos :
-		public expressions::Unary <Type, etree::cos <typename Type::value_type>, Execution_Policy>
+		public expressions::Unary <Type, vap::cos <typename Type::value_type>, Execution_Policy>
 	{ Cos(const Type& value) : Unary(value) {} };
 	
 	template <typename Type, 
 			  typename Execution_Policy = serial_policy>
 	struct Tan :
-		public expressions::Unary <Type, etree::tan <typename Type::value_type>, Execution_Policy>
+		public expressions::Unary <Type, vap::tan <typename Type::value_type>, Execution_Policy>
 	{ Tan(const Type& value) : Unary(value) {} };
 	
 	template <typename Type, 
 			  typename Execution_Policy = serial_policy>
 	struct Log :
-		public expressions::Unary <Type, etree::log <typename Type::value_type>, Execution_Policy>
+		public expressions::Unary <Type, vap::log <typename Type::value_type>, Execution_Policy>
 	{ Log(const Type& value) : Unary(value) {} };
 	
 	template <typename Type, 
 			  typename Execution_Policy = serial_policy>
 	struct Negate :
-		public expressions::Unary <Type, etree::negate <typename Type::value_type>, Execution_Policy>
+		public expressions::Unary <Type, vap::negate <typename Type::value_type>, Execution_Policy>
 	{ Negate(const Type& value) : Unary(value) {} };
 
 	/*******************************/
@@ -169,4 +169,4 @@ namespace operators {
 	}
 
 } // end namespace operators
-} // end namespace etree
+} // end namespace vap

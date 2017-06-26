@@ -7,7 +7,7 @@
 // This is more descriptive than the usual static_cast code
 #define CRTP_DOWNCAST(_D) static_cast<_D>(*this)
 
-namespace etree		  {
+namespace vap		  {
 namespace expressions {
 
 template <typename D>
@@ -190,4 +190,4 @@ struct expression_traits<Unary<T, O, P>>
 };
 	
 } // end namespace expressions
-} // end namespace etree
+} // end namespace vap

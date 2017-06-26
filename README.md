@@ -1,4 +1,4 @@
-# emp
+# Vap
 Vector Arithmetic in Parallel:
 
 This library provides the correct operator overloads to use thrust vectors (or any random-access container) numerically in scientific 

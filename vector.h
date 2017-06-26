@@ -10,7 +10,7 @@
 
 #include <thrust\execution_policy.h>
 
-namespace etree		   {
+namespace vap		   {
 namespace constructors {
 // This is the default constructor for the vector class below
 class Loop
@@ -67,13 +67,13 @@ protected:
 // Default ctor is LoopConstructor
 // The construction policy can be overriden as in the case of thrust::device_vector.
 // Thus, thrust::transform, or a similar method can be used in place of the loop ctor
-// This allows for proper parallelization of the etree expressions
+// This allows for proper parallelization of the vap expressions
 template <typename T, 
 		  typename ConstructPolicy	= constructors::Loop,
 		  typename Container		= std::vector<T>,
 		  typename Execution_Policy = serial_policy>
 class vector : 
-	public  expressions::Expression<etree::vector<T, ConstructPolicy, Container, Execution_Policy>>,
+	public  expressions::Expression<vap::vector<T, ConstructPolicy, Container, Execution_Policy>>,
 	private ConstructPolicy
 {
 protected:
@@ -145,7 +145,7 @@ public:
 // This is the vector traits template specialization.
 // Since CRTP typedef vision is limited, we have to rely on the traits idiom.
 template <typename T, class Ctor, typename C, class Exec>
-struct expressions::expression_traits<etree::vector<T, Ctor, C, Exec>>
+struct expressions::expression_traits<vap::vector<T, Ctor, C, Exec>>
 {
 	using value_type	 = T;
 
@@ -156,16 +156,16 @@ struct expressions::expression_traits<etree::vector<T, Ctor, C, Exec>>
 
 // Vector on the left, container on the right
 template <typename U, typename C>
-bool operator == (const etree::vector<U>& lhs, const C& rhs)
+bool operator == (const vap::vector<U>& lhs, const C& rhs)
 {
 	return lhs.elements == rhs;
 }
 
 // Container on the left, vector on the right
 template <typename U, typename C>
-bool operator == (const C& lhs, const etree::vector<U>& rhs)
+bool operator == (const C& lhs, const vap::vector<U>& rhs)
 {
 	return rhs.elements == lhs;
 }
 
-} // end namespace etree
+} // end namespace vap

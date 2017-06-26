@@ -5,12 +5,12 @@
 
 #include "config.h"
 
-#ifdef ETREE_USING_THRUST
+#ifdef VAP_USING_THRUST
 #include <thrust\complex.h>
 #include <thrust\tuple.h>
 #endif
 
-namespace etree {
+namespace vap {
 
 enum { Argument1 = 0, Argument2 = 1, };
 
@@ -157,4 +157,4 @@ struct negate
 	}
 };
 
-} // end namespace etree
+} // end namespace vap

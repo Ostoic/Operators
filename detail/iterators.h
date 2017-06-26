@@ -7,7 +7,7 @@
 #include <boost\iterator\zip_iterator.hpp>
 #include <boost\tuple\tuple.hpp>
 
-namespace etree		{
+namespace vap		{
 namespace iterators {
 
 template <typename T>
@@ -35,7 +35,7 @@ struct unary_iterator <serial_policy>
 										   AdaptableUnaryFunction::result_type>;
 };
 
-#ifdef ETREE_USING_THRUST
+#ifdef VAP_USING_THRUST
 
 #include <thrust\iterator\transform_iterator.h>
 #include <thrust\iterator\zip_iterator.h>
@@ -63,4 +63,4 @@ struct unary_iterator <parallel_policy>
 #endif
 
 } // end namespace iterators
-} // end namespace etree
+} // end namespace vap
