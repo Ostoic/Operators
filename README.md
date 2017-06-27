@@ -4,7 +4,7 @@ Vector Arithmetic in Parallel
 This library provides the correct operator overloads for use with **thrust** vectors (or any random-access container) numerically in scientific calculations, that allows for **serial** or **parallel** execution policies. Expression templates are used to reduce the number of temporary copies that would be necessary otherwise. 
 
 ```c++
-#include <vap\vector.h>+
+#include <vap\vector.h>
 #include <thrust\device_vector.h>
 
 #include <iostream>
@@ -49,6 +49,9 @@ int main()
   
     // Compute the result in parallel.
     VVec result = x + y + z;
+    
+    // Transfer result to host
+    thrust::copy(result.begin(), result.end(), host.begin());
   
     // Print result of sum
     std::cout << "Result = " << host[0] << std::endl;
@@ -66,7 +69,7 @@ int main()
     auto zip_begin = thrust::make_zip_iterator(thrust::make_tuple(xy_begin, z.begin())), add<T>);
     auto zip_end   = thrust::make_zip_iterator(thrust::make_tuple(xy_end,   z.end())),   add<T>);
 										 
-    // Apply the operators when dereferenced in thrust::copy.
+    // Apply the operators in parallel when dereferenced in thrust::copy.
     thrust::copy(thrust::make_transform_iterator(zip_begin, add<T>),
                  thrust::make_transform_iterator(zip_end,   add<T>),
                  result.begin());
