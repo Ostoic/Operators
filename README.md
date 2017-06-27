@@ -29,37 +29,37 @@ struct add
 
 int main()
 {
-  using T = double;
-  using Vec = std::vector<T>;
-  using VVec = vap::vector<T, vap::constructors::Thrust, // Uses thrust::copy as the ctor
-                              thrust::device_vector<T>,  // Underlying container is a thrus::device_vector
-                              vap::parallel_policy>;     // Executes in parallel
-  // Include operator overloads                          
-  using vap::operators;
+	using T = double;
+	using Vec = std::vector<T>;
+	using VVec = vap::vector<T, vap::constructors::Thrust, // Uses thrust::copy as the ctor
+                                thrust::device_vector<T>,  // Underlying container is a thrus::device_vector
+                                vap::parallel_policy>;     // Executes in parallel
+	// Include operator overloads                          
+	using vap::operators;
   
-  const std::size_t N = 4;
+	const std::size_t N = 4;
   
-  thrust::host_vector<T> host(N);
+	thrust::host_vector<T> host(N);
   
-  // Define a vap::vector expression with the given properties defined in VVec.
-  VVec x(N), y(N), z(N);
+	// Define a vap::vector expression with the given properties defined in VVec.
+	VVec x(N), y(N), z(N);
   
-  // Set the contents of the above vectors
-  x.assign(N, 3); y.assign(N, -1); z.assign(N, -1);
+	// Set the contents of the above vectors
+	x.assign(N, 3); y.assign(N, -1); z.assign(N, -1);
   
-  // Compute the result in parallel.
-  VVec result = x + y + z;
+	// Compute the result in parallel.
+	VVec result = x + y + z;
   
 	// Print result of sum
-  std::cout << "Result = " << host[0] << std::endl;
+	std::cout << "Result = " << host[0] << std::endl;
 	
-  // The above expression is expanded compile-time to be equivalent to the following code.
+	// The above expression is expanded compile-time to be equivalent to the following code.
 	// First make the transform iterators for evaluating x + y.
 	auto xy_begin = thrust::make_transform_iterator(
-			    thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin())), add<T>);
+						thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin())), add<T>);
 													
 	auto xy_end   = thrust::make_transform_iterator(
-			    thrust::make_zip_iterator(thrust::make_tuple(x.end(), y.end())), add<T>);
+						thrust::make_zip_iterator(thrust::make_tuple(x.end(), y.end())), add<T>);
 	
 	// Then zip the previous iterators into a tuple ((x+y).begin(), z.begin()) 
 	// (.end, respectively) to achieve an evaluation equivalent to (x + y) + z.
@@ -67,15 +67,15 @@ int main()
 	auto zip_end   = thrust::make_zip_iterator(thrust::make_tuple(xy_end,   z.end())),   add<T>);
 										 
 	// Apply the operators when dereferenced in thrust::copy.
-  thrust::copy(thrust::make_transform_iterator(zip_begin, add<T>),
-	       thrust::make_transform_iterator(zip_end,   add<T>),
-	       result.begin());
+	thrust::copy(thrust::make_transform_iterator(zip_begin, add<T>),
+				 thrust::make_transform_iterator(zip_end,   add<T>),
+				 result.begin());
   
-  // Transfer result to host
-  thrust::copy(result.begin(), result.end(), host.begin());
+	// Transfer result to host
+	thrust::copy(result.begin(), result.end(), host.begin());
   
 	// Print result of sum
-  std::cout << "Result = " << host[0] << std::endl;
-  return 0;
+	std::cout << "Result = " << host[0] << std::endl;
+	return 0;
 }
 ```
