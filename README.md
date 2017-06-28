@@ -33,7 +33,7 @@ int main()
     using Vec = std::vector<T>;
     using VVec = vap::vector<T, vap::constructors::Thrust, // Uses thrust::copy as the ctor
                                 thrust::device_vector<T>,  // Underlying container is a thrus::device_vector
-                                vap::parallel_policy>;     // Executes in parallel
+                                vap::parallel_execution>;  // Executes in parallel
     // Include operator overloads                          
     using vap::operators;
   
