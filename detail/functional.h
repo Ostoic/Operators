@@ -3,12 +3,12 @@
 #include <cmath>
 #include <boost\tuple\tuple.hpp>
 
-#include "config.h"
-
 #ifdef VAP_USING_THRUST
 #include <thrust\complex.h>
 #include <thrust\tuple.h>
 #endif
+
+#include <vap\config.h>
 
 namespace vap {
 
@@ -82,9 +82,9 @@ struct power
 		IF_USING_THRUST (using thrust::get);
 		NOT_USING_THRUST(using boost::get);
 
-		IF_USING_THRUST (using thrust::pow);
-		NOT_USING_THRUST(using std::pow);
-		return pow(get<Argument1>(args), get<Argument2>(args));
+		//IF_USING_THRUST (using thrust::pow);
+		//NOT_USING_THRUST(using std::pow);
+		return std::pow(get<Argument1>(args), get<Argument2>(args));
 	}
 };
 
@@ -97,9 +97,9 @@ struct sin
 	ANY_SYSTEM
 	Result operator () (const Type& value) const
 	{
-		IF_USING_THRUST (using thrust::sin);
-		NOT_USING_THRUST(using std::sin);
-		return sin(value);
+		//IF_USING_THRUST (using thrust::sin);
+		//NOT_USING_THRUST(using std::sin);
+		return std::sin(value);
 	}
 };
 
@@ -111,9 +111,9 @@ struct cos
 	ANY_SYSTEM
 	Result operator () (const Type& value) const
 	{
-		IF_USING_THRUST (using thrust::cos);
-		NOT_USING_THRUST(using std::cos);
-		return cos(value);
+		//IF_USING_THRUST (using thrust::cos);
+		//NOT_USING_THRUST(using std::cos);
+		return std::cos(value);
 	}
 };
 
@@ -125,9 +125,9 @@ struct tan
 	ANY_SYSTEM
 	Result operator () (const Type& value) const
 	{
-		IF_USING_THRUST (using thrust::tan);
-		NOT_USING_THRUST(using std::tan);
-		return tan(value);
+		//IF_USING_THRUST (using thrust::tan);
+		//NOT_USING_THRUST(using std::tan);
+		return std::tan(value);
 	}
 };
 
@@ -139,9 +139,9 @@ struct log
 	ANY_SYSTEM
 	Result operator () (const Type& value) const
 	{
-		IF_USING_THRUST (using thrust::log);
-		NOT_USING_THRUST(using std::log);
-		return log(value);
+		//IF_USING_THRUST (using thrust::log);
+		//NOT_USING_THRUST(using std::log);
+		return std::log(value);
 	}
 };
 

@@ -1,14 +1,16 @@
 #pragma once
 
-#include "detail\config.h"
-
-#include "operators.h"
-#include "execution_policy.h"
+#include <vap\config.h>
+#include <vap\detail\traits.h>
+#include <vap\expressions\operators.h>
+#include <vap\execution_policy.h>
 
 #include <vector>
 #include <algorithm>
 
+#ifdef VAP_USING_THRUST
 #include <thrust\execution_policy.h>
+#endif
 
 namespace vap		   {
 namespace constructors {
@@ -53,7 +55,8 @@ protected:
 	template <class Container, class Exp>
 	void ctor(Container& c, const Exp& expression)
 	{
-		thrust::copy(thrust::device, expression.cbegin(), expression.cend(), c.begin());
+		IF_USING_THRUST(
+			thrust::copy(thrust::device, expression.cbegin(), expression.cend(), c.begin()));
 	}
 
 	template <class Container, class Exp>
@@ -61,7 +64,9 @@ protected:
 	{ ctor(c, e); }
 };
 
-} // end namespace construcors
+} // end namespace constructors
+
+namespace expressions {
 
 // Default data container is std::vector<T> 
 // Default ctor is LoopConstructor
@@ -71,18 +76,18 @@ protected:
 template <typename T, 
 		  typename ConstructPolicy	= constructors::Loop,
 		  typename Container		= std::vector<T>,
-		  typename Execution_Policy = serial_policy>
+		  typename Execution_Policy = serial_execution>
 class vector : 
-	public  expressions::Expression<vap::vector<T, ConstructPolicy, Container, Execution_Policy>>,
+	public  expressions::Expression<vap::expressions::vector<T, ConstructPolicy, Container, Execution_Policy>>,
 	private ConstructPolicy
 {
 protected:
 	Container elements;
 
 public:
-	using policy		 = typename expressions
+	using exec			 = typename expressions
 		::expression_traits<vector>
-		::policy;
+		::exec;
 
 	using value_type	 = typename expressions
 		::expression_traits<vector>
@@ -141,31 +146,22 @@ public:
 	friend bool operator == (const C& lhs, const vector<U>& rhs);
 };
 
-// Define expression_traits of vector as an expression
-// This is the vector traits template specialization.
-// Since CRTP typedef vision is limited, we have to rely on the traits idiom.
-template <typename T, class Ctor, typename C, class Exec>
-struct expressions::expression_traits<vap::vector<T, Ctor, C, Exec>>
-{
-	using value_type	 = T;
-
-	using iterator		 = typename C::iterator;
-	using const_iterator = typename C::const_iterator;
-	using policy		 = Exec;
-};
-
 // Vector on the left, container on the right
 template <typename U, typename C>
-bool operator == (const vap::vector<U>& lhs, const C& rhs)
+bool operator == (const vap::expressions::vector<U>& lhs, const C& rhs)
 {
 	return lhs.elements == rhs;
 }
 
 // Container on the left, vector on the right
 template <typename U, typename C>
-bool operator == (const C& lhs, const vap::vector<U>& rhs)
+bool operator == (const C& lhs, const vap::expressions::vector<U>& rhs)
 {
 	return rhs.elements == lhs;
 }
+
+} // end namespace expressions
+
+using expressions::vector;
 
 } // end namespace vap

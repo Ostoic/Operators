@@ -10,10 +10,7 @@
 #include <thrust\device_vector.h>
 #include "DeviceOperators.h"
 
-#include "iterators.h"
-#include "vector.h"
-#include "operators.h"
-#include "expressions.h"
+#include <vap\vector.h>
 
 thrust::device_vector<double> vap_thrust_result;
 thrust::device_vector<double> thrust_std_result;
@@ -34,8 +31,7 @@ double test(const V* _x, const V* _y, Out* output)
 {
 	using namespace vector_operators::vector;
 	using namespace thrust_operators::vector;
-	using namespace vap::operators::binary;
-	using namespace vap::operators::unary;
+	using namespace vap::operators;
 
 	Stopwatch timer;
 
@@ -44,7 +40,7 @@ double test(const V* _x, const V* _y, Out* output)
 	const V& y = *_y;
 
 	timer.start();
-	const V result = cos(y)*x + y - x;
+	const V result;// = cos(y)*x + y - x;
 	timer.stop();
 
 	*output = result;
@@ -65,7 +61,7 @@ double test_Loop(const V* _x, const V* _y, Out* output)
 	timer.start();
 	T* result = new T[N];
 	for (unsigned int j = 0; j < N; j++)
-		result[j] = y[j] * x[j] + y[j] - x[j];
+		result[j] = cos(y[j]) * x[j] + y[j] - x[j];
 
 	timer.stop();
 
@@ -121,7 +117,7 @@ void runTests()
 	DVec d_x, d_y;
 	vap::vector<T> c_x, c_y;
 	vap::vector<T, vap::constructors::STL> stl_x, stl_y;
-	vap::vector<T, vap::constructors::Thrust, DVec, vap::parallel_policy> ed_x, ed_y;
+	vap::vector<T, vap::constructors::Thrust, DVec, vap::parallel_execution> ed_x, ed_y;
 
 	RuntimeTest<double> vap_loop(sizes), vap_stl(sizes), vap_thrust(sizes), thrust_std(sizes), std(sizes);
 
@@ -167,24 +163,24 @@ void runTests()
 		<< std::to_string(loop_result == vap_stl_result)
 		<< endl*/
 
-		<< "loop_result == vap_thrust_result: "
+		<< "loop_result == thrust_std_host: "
 		<< std::to_string(loop_result == thrust_std_host)
 		<< endl
 
-		<< "loop_result == thrust_std_result: "
+		<< "loop_result == vap_thrust_host: "
 		<< std::to_string(loop_result == vap_thrust_host)
 		<< endl
 
 		<< "loop_result == std_result: "
 		<< std::to_string(loop_result == std_result)
-		<< endl;
+		<< endl << endl;
 
 	std::cout << "STD: "		<< std_result[900]		  << endl
 			  << "Loop: "		<< loop_result[900]		  << endl
-			  << "Thrust STD: " << thrust_std_host[900] << endl
-			  << "vap Thrust: " << vap_thrust_host[900] << endl
-			  //<< "vap STL: "	<< vap_stl_result[900]  << endl
-			  << "vap Loop: " << vap_loop_result[900] << endl;
+			  << "Thrust STD: " << thrust_std_host[900]   << endl
+			  << "vap Thrust: " << vap_thrust_host[900]   << endl
+			  //<< "vap STL: "	<< vap_stl_result[900]    << endl
+			  << "vap Loop: "	<< vap_loop_result[900]   << endl << endl;
 
 	std::cout << "Result vector sizes:"		<< endl;
 	std::cout << "loop_result size: "		<< loop_result.size() << endl;
@@ -195,38 +191,51 @@ void runTests()
 	//std::cout << "vap_stl_result size: "	<< vap_stl_result.size() << endl;
 }
 
+template <typename Result>
+struct Adder
+{
+	using result_type = Result;
+	template <class Tuple>
+	Result operator () (const Tuple& args)
+	{
+		return boost::get<0>(args) +boost::get<1>(args);
+	}
+};
+
 int main()
 {
-	using namespace vap::operators::binary;
+	using namespace vap::operators;
 	//using namespace vap::operators::unary;
 
 	cudaFree(0);
 	using T		= double;
 	using Vec	= std::vector<T>;
 	using DVec	= thrust::device_vector<T>;
-	using EVec  = vap::vector < T, vap::constructors::STL, Vec, vap::serial_policy>;
-	using EDVec = vap::vector<T, vap::constructors::Thrust, DVec, vap::parallel_policy>;
+	using EVec  = vap::vector<T, vap::constructors::STL, Vec, vap::serial_execution>;
+	using EDVec = vap::vector<T, vap::constructors::Thrust, DVec, vap::parallel_execution>;
 
 	const std::size_t N = 3;
 
-	EDVec dx(N), dy(N);
-	dx.assign(N, -1);
-	dy.assign(N, 3);
-
-
-	EDVec dsum = dx + dy;
-
-	/*EVec x(N), y(N);
+	EDVec x(N), y(N);
 	x.assign(N, -1);
 	y.assign(N, 3);
 
-	EVec sum = x + y;*/
+	EDVec sum = x + y + 1;
+	 
+	Vec result(N);
 
-	//DVec& data = sum;
+	thrust::copy(sum.begin(), sum.end(), result.begin());
 
-	//std::cout << "Sum = " << host[0] << std::endl;
-	//std::cout << "Sum = " << sum[0] << std::endl;
-	runTests();
+	std::cout << "Sum = " << result[0] << std::endl;
+
+	Adder<T> add;
+
+	Vec test(N);
+	test[0] = 1;
+	test[1] = 3;
+	test[2] = -1;
+
+	//runTests();
 	return 0;
 }
 
