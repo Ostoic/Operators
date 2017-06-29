@@ -3,5 +3,5 @@ root = true
 
 # 4 space indentation
 [*.{cpp,h,cs,xaml,editorconfig}]
-indent_style = tabs
+indent_style = spaces
 indent_size = 4
