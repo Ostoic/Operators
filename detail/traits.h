@@ -50,15 +50,36 @@ struct is_expression <expressions::vector<T, Ctor, C, P>>	: std::true_type{};
 
 // For ensuring the type will have class-like properties
 template <typename T>
-using scalarize = typename std::conditional<std::is_arithmetic<T>::value, 
+using vectorize = std::conditional<std::is_arithmetic<T>::value, 
 								   expressions::Scalar<T>,		 // If T is an arithmetic type, wrap it in a Scalar<T>
-								   T>::type;					 // Otherwise, T is a possible expression candidate
+								   T>;					         // Otherwise, T is a possible expression candidate
+    
+template <typename T>
+using vectorize_t = typename vectorize<T>::type;
+    
+template <typename T>
+using exec_extractor = typename T::exec;
+    
+template <typename T>
+struct is_exec : std::false_type{};
+    
+template <typename T>
+struct is_exec<execution_policy>   : std::true_type{};
+    
+template <typename T>
+struct is_exec<absorption_policy>  : std::true_type{};
 
+template <typename T>
+struct is_exec<serial_execution>   : std::true_type{};
+    
+template <typename T>
+struct is_exec<parallel_execution> : std::true_type{};
+    
 template <typename Exec>
-struct is_strong_exec
+struct is_strong_exec 
 {
-	static const bool value = std::is_same<Exec, parallel_execution>::value ||
-							  std::is_same<Exec, serial_execution>::value;
+    static const bool value = std::is_same<Exec, parallel_execution>::value ||
+			                  std::is_same<Exec, serial_execution>::value;
 };
 
 template <typename Exec>
@@ -87,25 +108,13 @@ struct get_strongest_exec<T1>
 					T1,							// If T1 is strong, return T1
 					absorption_policy>;			// Otherwise, absorb surrounding execution policies
 };
-    
-template <typename T>
-using exec_extractor = typename T::exec;
 
 template <typename T, typename... Ts>
 struct get_exec : get_strongest_exec<exec_extractor<T>,
-                                     exec_extractor<Ts>...>
-{};
+                                     exec_extractor<Ts>...> {};
 
 template <typename T>
 struct get_exec<T> : get_strongest_exec<T::exec> {};
-
-//template <typename T1, typename T2>
-//using get_exec = std::conditional<is_expression<T1>::value, typename T1::exec,    // If T1 is an expression, use its execution policy
-//					std::conditional_t<is_expression<T2>::value, typename T2::exec, // Else if T2 is an expression, use its execution policy
-//									   absorption_policy>>;					        // Otherwise inherit the surrounding execution policy
-//
-//template <typename T1, typename T2>
-//using get_exec_t = get_exec<T1, T2>::type;
 
 // *** For some reason using get_strongest_exec_t alias shortcut breaks the compiler
 // *** We opt to instead just use get_strongest_exec<...>::type
