@@ -211,8 +211,9 @@ struct expression_traits<vap::expressions::vector<T, Ctor, C, Exec>>
 
 using detail::is_expression;
 
-using detail::scalarize;
-
+using detail::vectorize:
+using detail::vectorize_t;
+    
 using detail::get_exec;
 using detail::get_strongest_exec;
 
