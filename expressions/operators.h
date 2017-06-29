@@ -97,36 +97,36 @@ namespace operators {
 	/** Binary Operator Overloads **/
 	/*******************************/
 	template <typename Left, typename Right,
-			  typename Left_Exp  = vap::scalarize<Left>,
-			  typename Right_Exp = vap::scalarize<Right>,
+			  typename Left_Exp  = vap::vectorize_t<Left>,
+			  typename Right_Exp = vap::vectorize_t<Right>,
 			  typename Return    = Sum<Left_Exp, Right_Exp>>
 	const Return operator + (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 	
 	template <typename Left, typename Right, 
-			  typename Left_Exp  = vap::scalarize<Left>,
-			  typename Right_Exp = vap::scalarize<Right>,
+			  typename Left_Exp  = vap::vectorize_t<Left>,
+			  typename Right_Exp = vap::vectorize_t<Right>,
 			  typename Return    = Difference<Left_Exp, Right_Exp>>
 	const Return operator - (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 	
 	template <typename Left, typename Right, 
-			  typename Left_Exp  = vap::scalarize<Left>,
-			  typename Right_Exp = vap::scalarize<Right>,
+			  typename Left_Exp  = vap::vectorize_t<Left>,
+			  typename Right_Exp = vap::vectorize_t<Right>,
 			  typename Return    = Product<Left_Exp, Right_Exp>>
 	const Return operator * (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 	
 	template <typename Left, typename Right, 
-			  typename Left_Exp  = vap::scalarize<Left>,
-			  typename Right_Exp = vap::scalarize<Right>,
+			  typename Left_Exp  = vap::vectorize_t<Left>,
+			  typename Right_Exp = vap::vectorize_t<Right>,
 			  typename Return    = Quotient<Left_Exp, Right_Exp>>
 	const Return operator / (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 	
 	template <typename Left, typename Right, 
-			  typename Left_Exp  = vap::scalarize<Left>,
-			  typename Right_Exp = vap::scalarize<Right>,
+			  typename Left_Exp  = vap::vectorize_t<Left>,
+			  typename Right_Exp = vap::vectorize_t<Right>,
 			  typename Return    = Power<Left_Exp, Right_Exp>>
 	const Return operator ^ (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
@@ -135,27 +135,27 @@ namespace operators {
 	/** Unary Operator Overloads **/
 	/******************************/
 	template <typename Type,
-			  typename Return = Negate<vap::scalarize<Type>>>
+			  typename Return = Negate<vap::vectorize_t<Type>>>
 	const Return operator - (const Type& t)
 	{ return Return(t); }
 
 	template <typename Type,
-			  typename Return = Sin<vap::scalarize<Type>>>
+			  typename Return = Sin<vap::vectorize_t<Type>>>
 	const Return sin(const Type& t)
 	{ return Return(t); }
 
 	template <typename Type,
-			  typename Return = Cos<vap::scalarize<Type>>>
+			  typename Return = Cos<vap::vectorize_t<Type>>>
 	const Return cos(const Type& t)
 	{ return Return(t); }
 
 	template <typename Type,
-			  typename Return = Tan<vap::scalarize<Type>>>
+			  typename Return = Tan<vap::vectorize_t<Type>>>
 	const Return tan(const Type& t)
 	{ return Return(t); }
 
 	template <typename Type,
-			  typename Return = Log<vap::scalarize<Type>>>
+			  typename Return = Log<vap::vectorize_t<Type>>>
 	const Return log(const Type& t)
 	{ return Return(t); }
 
