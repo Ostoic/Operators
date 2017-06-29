@@ -16,6 +16,7 @@ template <class Derived>
 class Expression
 {
 public:
+	using exec			 = typename expressions::expression_traits<Derived>::exec;
 	using iterator		 = typename expressions::expression_traits<Derived>::iterator;
 	using const_iterator = typename expressions::expression_traits<Derived>::const_iterator;
 	using value_type	 = typename expressions::expression_traits<Derived>::value_type;
@@ -66,8 +67,8 @@ public:
 		// Note that putting the static_assert here ensures the class type
 		// is fully defined, so we can properly compare execution policies.
 		static_assert(
-			std::is_same<typename Left::exec, typename Right::exec>::value,
-			"Difference: Incompatible execution policies selected");
+			vap::compatible_execs<typename Left::exec, typename Right::exec>::value,
+			"Binary: Incompatible execution policies selected");
 
 		//assert(left.size() == right.size()); 
 	}
@@ -178,25 +179,25 @@ public:
 
 	iterator begin() 
 	{
-		return vap::make_constant_iterator(value);
+		return thrust::make_constant_iterator(value);
 	}
 
 	iterator end() 
 	{
-		return vap::make_constant_iterator(value);
+		return thrust::make_constant_iterator(value);
 	}
 
 	const_iterator cbegin() const
 	{
-		return vap::make_constant_iterator(value);
+		return thrust::make_constant_iterator(value);
 	}
 
 	const_iterator cend() const
 	{
-		return vap::make_constant_iterator(value);
+		return thrust::make_constant_iterator(value);
 	}
 
-	//std::size_t size()					   const { return expression.size(); }
+	std::size_t size()					   const { return 1; }
 	value_type operator [] (std::size_t i) const { return value; }
 };
 	

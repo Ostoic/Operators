@@ -220,20 +220,18 @@ int main()
 	x.assign(N, -1);
 	y.assign(N, 3);
 
-	EDVec sum = x + y + 1;
-	 
+	EDVec sum = x + y + 1 + 2;
+
+	//auto s = x + 1;
+	//auto n = s + 1;
+
+	//thrust::constant_iterator
+
 	Vec result(N);
 
 	thrust::copy(sum.begin(), sum.end(), result.begin());
 
 	std::cout << "Sum = " << result[0] << std::endl;
-
-	Adder<T> add;
-
-	Vec test(N);
-	test[0] = 1;
-	test[1] = 3;
-	test[2] = -1;
 
 	//runTests();
 	return 0;

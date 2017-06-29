@@ -39,13 +39,6 @@ struct unary_iterator <serial_execution>
 										   UnaryFunc::result_type>;
 };
 
-template <>
-struct scalar_iterator <inherit_execution_policy>
-{
-	template <typename Type>
-	using type = vap::iterators::constant_iterator<Type>;
-};
-
 #ifdef VAP_USING_THRUST
 
 #include <thrust\iterator\transform_iterator.h>
@@ -59,7 +52,7 @@ struct binary_iterator <parallel_execution>
 	template <class UnaryFunc, class LeftIterator, class RightIterator>
 	using type = thrust::transform_iterator<UnaryFunc,
 											thrust::zip_iterator<
-											thrust::tuple<LeftIterator, RightIterator >> , typename
+											thrust::tuple<LeftIterator, RightIterator>>, typename
 											UnaryFunc::result_type>;
 };
 
@@ -70,6 +63,22 @@ struct unary_iterator <parallel_execution>
 	using type = thrust::transform_iterator<UnaryFunc,
 											Iterator, typename 
 											UnaryFunc::result_type>;
+};
+
+template <>
+struct scalar_iterator <absorption_policy>
+{
+	template <typename Type>
+	using type = thrust::constant_iterator<Type>;
+};
+
+#else 
+
+template <>
+struct scalar_iterator <absorption_policy>
+{
+	template <typename Type>
+	using type = vap::iterators::constant_iterator<Type>;
 };
 
 #endif

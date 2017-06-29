@@ -42,23 +42,81 @@ struct is_expression <expressions::Binary<L, R, O, P>>		: std::true_type{};
 template <typename E, class O, class P>
 struct is_expression <expressions::Unary<E, O, P>>			: std::true_type{};
 
+template <typename T>
+struct is_expression <expressions::Scalar<T>>				: std::true_type{};
+
 template <class T, class Ctor, class C, class P>
 struct is_expression <expressions::vector<T, Ctor, C, P>>	: std::true_type{};
 
 // For ensuring the type will have class-like properties
 template <typename T>
-using scalarize = std::conditional<std::is_arithmetic<T>::value, expressions::Scalar<T>, T>;
+using scalarize = typename std::conditional<std::is_arithmetic<T>::value, 
+								   expressions::Scalar<T>,		 // If T is an arithmetic type, wrap it in a Scalar<T>
+								   T>::type;					 // Otherwise, T is a possible expression candidate
+
+template <typename Exec>
+struct is_strong_exec
+{
+	static const bool value = std::is_same<Exec, parallel_execution>::value ||
+							  std::is_same<Exec, serial_execution>::value;
+};
+
+template <typename Exec>
+struct is_weak_exec
+{
+	static const bool value = std::is_same<Exec, execution_policy>::value ||
+							  std::is_same<Exec, absorption_policy>::value;
+};
+
+// Choose the strongest execution policy from the template parameters
+template <typename T1, typename... Ts>
+struct get_strongest_exec
+{
+	using type = std::conditional_t<
+					is_strong_exec<T1>::value,	// Determine if T1 is strong or not
+					T1,											// If T1 is strong, return it
+					typename get_strongest_exec<Ts...>::type>;	// Otherwise, recurse down the list until we've found the strongest exec
+};
+
+// Edge case of get_strongest_exec
+template <typename T1>
+struct get_strongest_exec<T1>
+{
+	using type = std::conditional_t<
+					is_strong_exec<T1>::value,	// Check if T1 is a strong execution policy
+					T1,							// If T1 is strong, return T1
+					absorption_policy>;			// Otherwise, inherit surrounding execution policies
+};
+
+template <typename T, typename... Ts>
+struct get_exec
+{
+	//using type = get_exec<
+};
 
 template <typename T>
-using scalarize_t = scalarize<T>::type;
+struct get_exec<T> : get_strongest_exec<T::exec> {};
 
-template <typename T1, typename T2>
-using get_exec = std::conditional<is_expression<T1>::value, typename T1::exec,		// If T1 is an expression, use its execution policy
-					std::conditional_t<is_expression<T2>::value, typename T2::exec, // Else if T2 is an expression, use its execution policy
-									   inherit_execution_policy>>;					// Otherwise inherit the surrounding execution policy
+//template <typename T1, typename T2>
+//using get_exec = std::conditional<is_expression<T1>::value, typename T1::exec,		// If T1 is an expression, use its execution policy
+//					std::conditional_t<is_expression<T2>::value, typename T2::exec, // Else if T2 is an expression, use its execution policy
+//									   absorption_policy>>;					// Otherwise inherit the surrounding execution policy
+//
+//template <typename T1, typename T2>
+//using get_exec_t = get_exec<T1, T2>::type;
 
-template <typename T1, typename T2>
-using get_exec_t = get_exec<T1, T2>::type;
+// *** For some reason using get_strongest_exec_t alias shortcut breaks the compiler
+// *** We opt to instead just use get_strongest_exec<...>::type
+
+// If either of the execution policies inherit, then return true.
+// Otherwise compare execution policies to be equal.
+template <typename Exec1, typename Exec2>
+struct compatible_execs
+{
+	static const bool value = std::is_same<Exec1, absorption_policy>::value ||
+							  std::is_same<Exec2, absorption_policy>::value ||
+							  std::is_same<Exec1, Exec2>::value;
+};
 
 } // end namespace detail
 
@@ -71,7 +129,7 @@ struct expression_traits;
 template <typename L, typename R, class Op, class Exec>
 struct expression_traits<vap::expressions::Binary<L, R, Op, Exec>>
 {
-	using exec				   = Exec;
+	using exec				   = typename detail::get_strongest_exec<Exec, typename L::exec, typename R::exec>::type;
 	using value_type		   = typename L::value_type;
 
 	using left_iterator		   = typename L::iterator;
@@ -95,7 +153,7 @@ struct expression_traits<vap::expressions::Binary<L, R, Op, Exec>>
 template <typename T, class Op, class Exec>
 struct expression_traits<vap::expressions::Unary<T, Op, Exec>>
 {
-	using exec				  = Exec;
+	using exec				  = typename detail::get_strongest_exec<Exec, typename T::exec>::type;
 	using value_type		  = typename T::value_type;
 	using base_iterator		  = typename T::iterator;
 	using const_base_iterator = typename T::const_iterator;
@@ -115,7 +173,7 @@ struct expression_traits<vap::expressions::Unary<T, Op, Exec>>
 template <typename T>
 struct expression_traits<vap::expressions::Scalar<T>>
 {
-	using exec				  = vap::inherit_execution_policy;
+	using exec				  = vap::absorption_policy;
 	using value_type		  = T;
 	
 	// Retrieve unary_iterator specialization type for the given execution policy
@@ -143,9 +201,10 @@ struct expression_traits<vap::expressions::vector<T, Ctor, C, Exec>>
 using detail::is_expression;
 
 using detail::scalarize;
-using detail::scalarize_t;
 
 using detail::get_exec;
-using detail::get_exec_t;
+using detail::get_strongest_exec;
+
+using detail::compatible_execs;
 
 } // end namespace vap
