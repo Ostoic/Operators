@@ -73,7 +73,7 @@ template <typename T1, typename... Ts>
 struct get_strongest_exec
 {
 	using type = std::conditional_t<
-					is_strong_exec<T1>::value,	// Determine if T1 is strong or not
+					is_strong_exec<T1>::value,	                // Determine if T1 is strong or not
 					T1,											// If T1 is strong, return it
 					typename get_strongest_exec<Ts...>::type>;	// Otherwise, recurse down the list until we've found the strongest exec
 };
@@ -85,22 +85,24 @@ struct get_strongest_exec<T1>
 	using type = std::conditional_t<
 					is_strong_exec<T1>::value,	// Check if T1 is a strong execution policy
 					T1,							// If T1 is strong, return T1
-					absorption_policy>;			// Otherwise, inherit surrounding execution policies
+					absorption_policy>;			// Otherwise, absorb surrounding execution policies
 };
+    
+template <typename T>
+using exec_extractor = typename T::exec;
 
 template <typename T, typename... Ts>
-struct get_exec
-{
-	//using type = get_exec<
-};
+struct get_exec : get_strongest_exec<exec_extractor<T>,
+                                     exec_extractor<Ts>...>
+{};
 
 template <typename T>
 struct get_exec<T> : get_strongest_exec<T::exec> {};
 
 //template <typename T1, typename T2>
-//using get_exec = std::conditional<is_expression<T1>::value, typename T1::exec,		// If T1 is an expression, use its execution policy
+//using get_exec = std::conditional<is_expression<T1>::value, typename T1::exec,    // If T1 is an expression, use its execution policy
 //					std::conditional_t<is_expression<T2>::value, typename T2::exec, // Else if T2 is an expression, use its execution policy
-//									   absorption_policy>>;					// Otherwise inherit the surrounding execution policy
+//									   absorption_policy>>;					        // Otherwise inherit the surrounding execution policy
 //
 //template <typename T1, typename T2>
 //using get_exec_t = get_exec<T1, T2>::type;
