@@ -66,8 +66,8 @@ int main()
 	
     // Then zip the previous iterators into a tuple ((x+y).begin(), z.begin()) 
     // (.end, respectively) to achieve an evaluation equivalent to (x + y) + z.
-    auto zip_begin = thrust::make_zip_iterator(thrust::make_tuple(xy_begin, z.begin())), add<T>);
-    auto zip_end   = thrust::make_zip_iterator(thrust::make_tuple(xy_end,   z.end())),   add<T>);
+    auto zip_begin = thrust::make_zip_iterator(thrust::make_tuple(xy_begin, z.begin()));
+    auto zip_end   = thrust::make_zip_iterator(thrust::make_tuple(xy_end,   z.end()));
 										 
     // Apply the operators in parallel when dereferenced in thrust::copy.
     thrust::copy(thrust::make_transform_iterator(zip_begin, add<T>),
