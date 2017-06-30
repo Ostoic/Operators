@@ -58,21 +58,18 @@ template <typename T>
 using vectorize_t = typename vectorize<T>::type;
     
 template <typename T>
-using exec_extractor = typename T::exec;
-    
-template <typename T>
 struct is_exec : std::false_type{};
     
-template <typename T>
+template <>
 struct is_exec<execution_policy>   : std::true_type{};
     
-template <typename T>
+template <>
 struct is_exec<absorption_policy>  : std::true_type{};
 
-template <typename T>
+template <>
 struct is_exec<serial_execution>   : std::true_type{};
     
-template <typename T>
+template <>
 struct is_exec<parallel_execution> : std::true_type{};
     
 template <typename Exec>
@@ -87,6 +84,13 @@ struct is_weak_exec
 {
 	static const bool value = std::is_same<Exec, execution_policy>::value ||
 							  std::is_same<Exec, absorption_policy>::value;
+};
+
+
+template <typename T>
+struct exec_extractor
+{
+	using type = typename T::exec;
 };
 
 // Choose the strongest execution policy from the template parameters
@@ -109,15 +113,24 @@ struct get_strongest_exec<T1>
 					absorption_policy>;			// Otherwise, absorb surrounding execution policies
 };
 
-template <typename T, typename... Ts>
-struct get_exec : get_strongest_exec<exec_extractor<T>,
-                                     exec_extractor<Ts>...> {};
+template <typename... Ts>
+struct get_exec;
 
 template <typename T>
-struct get_exec<T> : get_strongest_exec<T::exec> {};
+struct get_exec<T> : get_strongest_exec<typename T::exec>{};
 
-// *** For some reason using get_strongest_exec_t alias shortcut breaks the compiler
-// *** We opt to instead just use get_strongest_exec<...>::type
+// *** MSVC COMPILER BUG: https://connect.microsoft.com/VisualStudio/feedback/details/810018/variadic-template-parameter-pack-expansion-error
+// ***					  https://connect.microsoft.com/VisualStudio/feedback/details/862959/c-parameter-pack-expansion-fails
+// *** We can't expand parameter pack with a subtype specified. Although the issue has been fixed in a later MSVC, we must work around this bug.
+// *** The current work-around uses exec_extractor
+
+//template <typename T, typename ... Ts>
+//struct get_exec<T, Ts...> : get_strongest_exec<typename T::exec,
+											   //typename Ts::exec...> {};
+
+template <typename T, typename ... Ts>
+struct get_exec<T, Ts...> : get_strongest_exec<typename exec_extractor<T>::type,
+											   typename exec_extractor<Ts>::type...>{};
 
 // If either of the execution policies inherit, then return true.
 // Otherwise compare execution policies to be equal.
@@ -211,7 +224,7 @@ struct expression_traits<vap::expressions::vector<T, Ctor, C, Exec>>
 
 using detail::is_expression;
 
-using detail::vectorize:
+using detail::vectorize;
 using detail::vectorize_t;
     
 using detail::get_exec;
