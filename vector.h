@@ -2,6 +2,7 @@
 
 #include <vap\config.h>
 #include <vap\detail\traits.h>
+#include <vap\detail\constructors.h>
 #include <vap\expressions\operators.h>
 #include <vap\execution_policy.h>
 
@@ -14,61 +15,7 @@
 #include <thrust\execution_policy.h>
 #endif
 
-namespace vap		   {
-namespace constructors {
-// This is the default constructor for the vector class below
-class Loop
-{
-protected:
-	template <class C, class E>
-	void ctor(C& c, const E& e)
-	{
-		auto sz = e.size();
-		for (std::size_t i = 0; i < sz; ++i)
-			c[i] = e[i];
-	}
-
-	template <class C, class E>
-	void assignment(C &c, const E& e)
-	{
-		ctor(c, e);
-	}
-};
-
-class STL
-{
-protected:
-	template <class Container, class Exp>
-	void ctor(Container& c, const Exp& expression)
-	{
-		std::copy(expression.cbegin(), expression.cend(), c.begin());
-	}
-
-	template <class Container, class Exp>
-	void assignment(Container &c, const Exp& e)
-	{
-		ctor(c, e);
-	}
-};
-
-class Thrust
-{
-protected:
-	template <class Container, class Exp>
-	void ctor(Container& c, const Exp& expression)
-	{
-#		ifdef VAP_USING_THRUST
-			thrust::copy(thrust::device, expression.cbegin(), expression.cend(), c.begin());
-#		endif
-	}
-
-	template <class Container, class Exp>
-	void assignment(Container &c, const Exp& e)
-	{ ctor(c, e); }
-};
-
-} // end namespace constructors
-
+namespace vap		  {
 namespace expressions {
 
 // Default data container is std::vector<T> 
@@ -77,12 +24,12 @@ namespace expressions {
 // Thus, thrust::transform, or a similar method can be used in place of the loop ctor
 // This allows for proper parallelization of the vap expressions
 template <typename T, 
-		  typename ConstructPolicy	= constructors::Loop,
+		  typename Constructor		= constructors::Loop,
 		  typename Container		= std::vector<T>,
 		  typename Execution_Policy = serial_execution>
 class vector : 
-	public  expressions::Expression<vap::expressions::vector<T, ConstructPolicy, Container, Execution_Policy>>,
-	private ConstructPolicy
+	public  expressions::Expression<vap::expressions::vector<T, Constructor, Container, Execution_Policy>>,
+	private Constructor
 {
 protected:
 	Container elements;
@@ -103,8 +50,8 @@ public:
 	void resize(const std::size_t size)						{ elements.resize(size); }
 
 	// CTOR policy details
-	using ConstructPolicy::ctor;
-	using ConstructPolicy::assignment;
+	using Constructor::ctor;
+	using Constructor::assignment;
 
 	vector() {}
 	vector(const std::size_t n) : elements(n) {}

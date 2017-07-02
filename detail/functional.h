@@ -3,17 +3,18 @@
 #include <cmath>
 #include <boost\tuple\tuple.hpp>
 
+#include <vap\config.h>
+
 #ifdef VAP_USING_THRUST
-#include <thrust\complex.h>
 #include <thrust\tuple.h>
 #endif
 
-#include <vap\config.h>
 
 namespace vap {
 
 enum { Arg1 = 0, Arg2 = 1, };
 
+// Expands the arguments of a tuple into a binary functor
 template <class BinaryFunctor>
 class apply
 {
@@ -45,7 +46,6 @@ struct sum
 	}
 };
 
-// Binary operator functors 
 template <typename T>
 struct difference
 {
@@ -59,7 +59,6 @@ struct difference
 };
 
 
-// Binary operator functors 
 template <typename T>
 struct product
 {
@@ -73,7 +72,6 @@ struct product
 };
 
 
-// Binary operator functors 
 template <typename T>
 struct quotient
 {
@@ -87,7 +85,6 @@ struct quotient
 };
 
 
-// Binary operator functors 
 template <typename T>
 struct power
 {
@@ -100,7 +97,7 @@ struct power
 	}
 };
 
-// Unary operator functors for the thrust parallel execution policy
+// Unary operator functors
 template <typename T>
 struct sin
 {
