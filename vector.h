@@ -65,9 +65,9 @@ public:
 	vector(const expressions::Expression<E>& e) : elements(e.size())
 	{ ctor(elements, e); }
 
-	template <typename E
+	template <typename E,
 			  typename = std::enable_if_t<vap::is_expression<E>::value>>
-	vector<T, Container, ConstructPolicy>& operator = (const expressions::Expression<E>& e)
+	vector& operator = (const expressions::Expression<E>& e)
 	{ 
 		if (elements.size() < e.size()) elements.resize(e.size());
 		assignment(elements, e); 

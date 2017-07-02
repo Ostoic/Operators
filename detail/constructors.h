@@ -1,3 +1,12 @@
+#include <algorithm>
+
+#include <vap\config.h>
+
+#ifdef VAP_USING_THRUST
+#include <thrust\copy.h>
+#include <thrust\execution_policy.h>
+#endif
+
 namespace vap		   {
 namespace constructors {
 // This is the default constructor for the vector class below

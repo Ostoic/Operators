@@ -104,7 +104,7 @@ struct sin
 	using result_type = T;
 
 	ANY_SYSTEM
-	Result operator () (const T& value) const
+	T operator () (const T& value) const
 	{
 		return std::sin(value);
 	}
@@ -116,7 +116,7 @@ struct cos
 	using result_type = T;
 
 	ANY_SYSTEM
-	Result operator () (const T& value) const
+	T operator () (const T& value) const
 	{
 		return std::cos(value);
 	}
