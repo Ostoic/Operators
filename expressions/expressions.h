@@ -12,14 +12,23 @@ namespace vap		  {
 namespace expressions {
 
 // Represents any operator expression
-template <class Derived>
+template <class Derived_Class>
 class Expression
 {
 public:
+	// Save the derived class type
+	using Derived = Derived_Class;
+
 	using exec			 = typename expressions::expression_traits<Derived>::exec;
 	using iterator		 = typename expressions::expression_traits<Derived>::iterator;
 	using const_iterator = typename expressions::expression_traits<Derived>::const_iterator;
 	using value_type	 = typename expressions::expression_traits<Derived>::value_type;
+
+	Derived& derived()
+	{ return *static_cast<Derived*>(this); }
+
+	Derived const& derived() const
+	{ return *static_cast<Derived const*>(this); }
 
 	// Forward the iterator interface downwards until we have enough 
 	// class data to define a proper iterator type
@@ -43,9 +52,10 @@ public:
 template <typename Left,
 		  typename Right,
 		  class	   Operator,
-		  class	   Exec_Policy>
+		  class	   Exec_Policy = absorption_policy,
+		  bool	   Is_Operator = false>
 class Binary :
-	public Expression <Binary <Left, Right, Operator, Exec_Policy>>
+	public Expression <Binary <Left, Right, Operator, Exec_Policy, Is_Operator>>
 {
 protected:
 	const Left&  left;
@@ -54,19 +64,17 @@ protected:
 	Operator apply;
 
 public:
-	// Retrieve traits 
-	using exec			 = typename expressions::expression_traits<Binary>::exec;
-	using value_type	 = typename expressions::expression_traits<Binary>::value_type;
-
-	using iterator		 = typename expressions::expression_traits<Binary>::iterator;
-	using const_iterator = typename expressions::expression_traits<Binary>::const_iterator;
-
 	Binary(const Left& lhs, const Right& rhs) : left(lhs), right(rhs) 
 	{ 
+		// Assert that both Left and Right types must be derived from Expression
+		static_assert (
+			vap::is_expression<Left>::value && vap::is_expression<Right>::value,
+			"Binary: Left and Right types must be expressions");
+
 		// Execution policies must coincide
 		// Note that putting the static_assert here ensures the class type
 		// is fully defined, so we can properly compare execution policies.
-		static_assert(
+		static_assert (
 			vap::compatible_execs<typename Left::exec, typename Right::exec>::value,
 			"Binary: Incompatible execution policies selected");
 
@@ -105,7 +113,7 @@ public:
 					apply);
 	}
 
-	std::size_t size()					   const { return left.size(); }
+	std::size_t size() const { return std::max(left.size(), right.size()); }
 	value_type operator [] (std::size_t i) const 
 	{ 
 		using boost::make_tuple; 
@@ -114,46 +122,38 @@ public:
 };
 
 // Represents a unary expression to be executed under the given execution policy and operator
-template <typename Exp,
+template <typename Base,
 		  class	   Operator,
-		  class	   Exec_Policy>
+		  class	   Exec_Policy = absorption_policy,
+		  bool     Is_Operator = false>
 class Unary :
-	public Expression <Unary <Exp, Operator, Exec_Policy>>
+	public Expression <Unary <Base, Operator, Exec_Policy, Is_Operator>>
 {
 protected:
-	const Exp& expression;
+	const Base& expression;
 
 	Operator apply;
 
 public:
-	// Retrieve traits 
-	using exec			 = typename expressions::expression_traits<Unary>::exec;
-	using value_type	 = typename expressions::expression_traits<Unary>::value_type;
-
-	using iterator		 = typename expressions::expression_traits<Unary>::iterator;
-	using const_iterator = typename expressions::expression_traits<Unary>::const_iterator;
-
-	Unary(const Exp& exp) : expression(exp) {}
+	Unary(const Base& exp) : expression(exp)
+	{
+		// Assert that the Base type must be derived from Expression
+		static_assert (
+			vap::is_expression<Base>::value,
+			"Unary: Base type must be an expression");
+	}
 
 	iterator begin() 
-	{
-		return make_transform_iterator(expression.begin(), apply);
-	}
+	{ return make_transform_iterator(expression.begin(), apply); }
 
 	iterator end() 
-	{
-		return make_transform_iterator(expression.end(), apply);
-	}
+	{ return make_transform_iterator(expression.end(), apply); }
 
 	const_iterator cbegin() const
-	{
-		return make_transform_iterator(expression.cbegin(), apply);
-	}
+	{ return make_transform_iterator(expression.cbegin(), apply); }
 
 	const_iterator cend() const
-	{
-		return make_transform_iterator(expression.cend(), apply);
-	}
+	{ return make_transform_iterator(expression.cend(), apply); }
 
 	std::size_t size()					   const { return expression.size(); }
 	value_type operator [] (std::size_t i) const { return apply(expression[i]); }
@@ -165,37 +165,30 @@ class Scalar :
 	public Expression <Scalar <Type>>
 {
 protected:
-	const Type& value;
+	// This MUST be a by-value variable. Otherwise rvalues
+	// will be invalidated when this class goes out of scope.
+	Type value;
 
 public:
-	// Retrieve traits 
-	using exec			 = typename expressions::expression_traits<Scalar>::exec;
-	using value_type	 = typename expressions::expression_traits<Scalar>::value_type;
-
-	using iterator		 = typename expressions::expression_traits<Scalar>::iterator;
-	using const_iterator = typename expressions::expression_traits<Scalar>::const_iterator;
-
-	Scalar(const Type& val) : value(val) {}
+	Scalar(const Type& val) : value(val) 
+	{
+		// Assert that the scalar type must be an arithmetic type
+		static_assert (
+			std::is_arithmetic<Type>::value,
+			"Scalar: Scalar type must be an arithmetic type");
+	}
 
 	iterator begin() 
-	{
-		return thrust::make_constant_iterator(value);
-	}
+	{ return thrust::make_constant_iterator(value); }
 
 	iterator end() 
-	{
-		return thrust::make_constant_iterator(value);
-	}
+	{ return thrust::make_constant_iterator(value); }
 
 	const_iterator cbegin() const
-	{
-		return thrust::make_constant_iterator(value);
-	}
+	{ return thrust::make_constant_iterator(value); }
 
-	const_iterator cend() const
-	{
-		return thrust::make_constant_iterator(value);
-	}
+	const_iterator cend()   const
+	{ return thrust::make_constant_iterator(value); }
 
 	std::size_t size()					   const { return 1; }
 	value_type operator [] (std::size_t i) const { return value; }

@@ -12,146 +12,150 @@
 
 namespace vap {
 
-enum { Argument1 = 0, Argument2 = 1, };
+enum { Arg1 = 0, Arg2 = 1, };
+
+template <class BinaryFunctor>
+class apply
+{
+private:
+	BinaryFunctor f;
+
+public:
+	using result_type = typename BinaryFunctor::result_type;
+
+	template <class Tuple>
+	ANY_SYSTEM
+	result_type operator () (const Tuple& args) const
+	{
+		using thrust::get;
+		return f(get<Arg1>(args), get<Arg2>(args));
+	}
+};
 
 // Binary operator functors 
-template <typename Result>
+template <typename T>
 struct sum
 {
-	using result_type = Result;
-	template <class Tuple>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Tuple& args) const
+	T operator () (const T& x, const T& y) const
 	{ 
-		IF_USING_THRUST (using thrust::get);
-		NOT_USING_THRUST(using boost::get);
-		return get<Argument1>(args) + get<Argument2>(args);
+		return x + y;
 	}
 };
 
-template <typename Result>
+// Binary operator functors 
+template <typename T>
 struct difference
 {
-	using result_type = Result;
-	template <class Tuple>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Tuple& args) const
-	{ 
-		IF_USING_THRUST (using thrust::get);
-		NOT_USING_THRUST(using boost::get);
-		return get<Argument1>(args) - get<Argument2>(args);
+	T operator () (const T& x, const T& y) const
+	{
+		return x - y;
 	}
 };
 
-template <typename Result>
+
+// Binary operator functors 
+template <typename T>
 struct product
 {
-	using result_type = Result;
-	template <class Tuple>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Tuple& args) const
-	{ 
-		IF_USING_THRUST (using thrust::get);
-		NOT_USING_THRUST(using boost::get);
-		return get<Argument1>(args) * get<Argument2>(args);
+	T operator () (const T& x, const T& y) const
+	{
+		return x * y;
 	}
 };
 
-template <typename Result>
+
+// Binary operator functors 
+template <typename T>
 struct quotient
 {
-	using result_type = Result;
-	template <class Tuple>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Tuple& args) const
-	{ 
-		IF_USING_THRUST (using thrust::get);
-		NOT_USING_THRUST(using boost::get);
-		return get<Argument1>(args) / get<Argument2>(args);
+	T operator () (const T& x, const T& y) const
+	{
+		return x / y;
 	}
 };
 
-template <typename Result>
+
+// Binary operator functors 
+template <typename T>
 struct power
 {
-	using result_type = Result;
-	template <class Tuple>
-	ANY_SYSTEM
-	Result operator () (const Tuple& args) const
-	{
-		IF_USING_THRUST (using thrust::get);
-		NOT_USING_THRUST(using boost::get);
+	using result_type = T;
 
-		//IF_USING_THRUST (using thrust::pow);
-		//NOT_USING_THRUST(using std::pow);
-		return std::pow(get<Argument1>(args), get<Argument2>(args));
+	ANY_SYSTEM
+	T operator () (const T& x, const T& y) const
+	{
+		return pow(x, y);
 	}
 };
 
 // Unary operator functors for the thrust parallel execution policy
-template <typename Result>
+template <typename T>
 struct sin
 {
-	using result_type = Result;
-	template <class Type>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Type& value) const
+	Result operator () (const T& value) const
 	{
-		//IF_USING_THRUST (using thrust::sin);
-		//NOT_USING_THRUST(using std::sin);
 		return std::sin(value);
 	}
 };
 
-template <typename Result>
+template <typename T>
 struct cos
 {
-	using result_type = Result;
-	template <class Type>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Type& value) const
+	Result operator () (const T& value) const
 	{
-		//IF_USING_THRUST (using thrust::cos);
-		//NOT_USING_THRUST(using std::cos);
 		return std::cos(value);
 	}
 };
 
-template <typename Result>
+template <typename T>
 struct tan
 {
-	using result_type = Result;
-	template <class Type>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Type& value) const
+	T operator () (const T& value) const
 	{
-		//IF_USING_THRUST (using thrust::tan);
-		//NOT_USING_THRUST(using std::tan);
 		return std::tan(value);
 	}
 };
 
-template <typename Result>
+template <typename T>
 struct log
 {
-	using result_type = Result;
-	template <class Type>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Type& value) const
+	T operator () (const T& value) const
 	{
-		//IF_USING_THRUST (using thrust::log);
-		//NOT_USING_THRUST(using std::log);
 		return std::log(value);
 	}
 };
 
-template <typename Result>
+template <typename T>
 struct negate
 {
-	using result_type = Result;
-	template <class Type>
+	using result_type = T;
+
 	ANY_SYSTEM
-	Result operator () (const Type& value) const
+	T operator () (const T& value) const
 	{
 		return -(value);
 	}

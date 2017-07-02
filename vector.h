@@ -6,9 +6,11 @@
 #include <vap\execution_policy.h>
 
 #include <vector>
+#include <iostream>
 #include <algorithm>
 
 #ifdef VAP_USING_THRUST
+#include <thrust\copy.h>
 #include <thrust\execution_policy.h>
 #endif
 
@@ -55,8 +57,9 @@ protected:
 	template <class Container, class Exp>
 	void ctor(Container& c, const Exp& expression)
 	{
-		IF_USING_THRUST(
-			thrust::copy(thrust::device, expression.cbegin(), expression.cend(), c.begin()));
+#		ifdef VAP_USING_THRUST
+			thrust::copy(thrust::device, expression.cbegin(), expression.cend(), c.begin());
+#		endif
 	}
 
 	template <class Container, class Exp>
@@ -85,23 +88,6 @@ protected:
 	Container elements;
 
 public:
-	using exec			 = typename expressions
-		::expression_traits<vector>
-		::exec;
-
-	using value_type	 = typename expressions
-		::expression_traits<vector>
-		::value_type;
-
-	// Provide interface for STL iteration
-	using iterator		 = typename expressions
-		::expression_traits<vector>
-		::iterator;
-
-	using const_iterator = typename expressions
-		::expression_traits<vector>
-		::const_iterator;
-
 	iterator begin() { return elements.begin(); }
 	iterator end()	 { return elements.end(); }
 
@@ -110,7 +96,7 @@ public:
 
 	// Interface for interacting with the underlying data
 	const T&  operator [] (const std::size_t i) const { return elements[i]; }
-	T& operator [] (const std::size_t i)			  { return elements[i]; }
+	T operator [] (const std::size_t i)				  { return elements[i]; }
 	std::size_t size()							const { return elements.size(); }
 
 	void assign(const std::size_t count, const T& element)  { elements.assign(count, element); }
@@ -122,20 +108,24 @@ public:
 
 	vector() {}
 	vector(const std::size_t n) : elements(n) {}
-	//vector(const Container& c)  : elements(c) {}
+	vector(const Container& c)  : elements(c) {}
+
+	explicit vector(Container&& c) : elements(std::move(c)) {}
 
 	// The actual evaluation is done here in the constructor for vector
-	// We should consider the input expression's execution policy
-	template <typename E>
-	vector(const expressions::Expression<E>& e) :
-		elements(e.size())
+	template <typename E,
+			  typename = std::enable_if_t<vap::is_expression<E>::value>>
+	vector(const expressions::Expression<E>& e) : elements(e.size())
 	{ ctor(elements, e); }
 
-	/*template <typename E>
-	vector<T, Container, ConstructPolicy>& operator = (const expressions::Expression<T, E>& e)
-	{ assignment(elements, e); }*/
+	template <typename E
+			  typename = std::enable_if_t<vap::is_expression<E>::value>>
+	vector<T, Container, ConstructPolicy>& operator = (const expressions::Expression<E>& e)
+	{ 
+		if (elements.size() < e.size()) elements.resize(e.size());
+		assignment(elements, e); 
+	}
 
-	// Allows us to 
 	operator	   Container&()		  { return this->elements; }
 	operator const Container&() const { return this->elements; }
 

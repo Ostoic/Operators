@@ -9,46 +9,37 @@ namespace vap		  {
 namespace expressions {
 
 // Forward declare all expression-derived classes.
-template <class Derived>
+template <class D>
 class Expression;
 
-template <typename Left, typename Right, class Operator, class Exec>
+template <typename L, typename R, class Op, class Exec, bool IsOp>
 class Binary;
 
-template <typename Exp, class Operator, class Exec>
+template <typename Base, class Op, class Exec, bool IsOp>
 class Unary;
 
 template <typename Type>
 class Scalar;
 
-template <typename T, typename ConstructPolicy, typename Container, typename Exec>
+template <typename Type, typename Ctor, typename C, typename P>
 class vector;
 
 } // end namespace expressions
 
 namespace detail {
 
-// General type is not an expression
-template <typename T>
-struct is_expression : std::false_type{};
 
 // Specialize expression and expression-derived types to hold true
-template <class D>
-struct is_expression <expressions::Expression<D>>			: std::true_type{};
+/*===============================*/
+/* Direct Expression derivations */
+/*===============================*/
+//template <class D>
+//struct is_expression <expressions::Expression<D>> : std::true_type{};
 
-template <class L, class R, class O, class P>
-struct is_expression <expressions::Binary<L, R, O, P>>		: std::true_type{};
+//template <typename Class>
+//struct is_expression : std::false_type{};
 
-template <typename E, class O, class P>
-struct is_expression <expressions::Unary<E, O, P>>			: std::true_type{};
-
-template <typename T>
-struct is_expression <expressions::Scalar<T>>				: std::true_type{};
-
-template <class T, class Ctor, class C, class P>
-struct is_expression <expressions::vector<T, Ctor, C, P>>	: std::true_type{};
-
-// For ensuring the type will have class-like properties
+// Convert the given type to a Scalar<T>, if it is not an arithmetic type.
 template <typename T>
 using vectorize = std::conditional<std::is_arithmetic<T>::value, 
 								   expressions::Scalar<T>,		 // If T is an arithmetic type, wrap it in a Scalar<T>
@@ -57,20 +48,8 @@ using vectorize = std::conditional<std::is_arithmetic<T>::value,
 template <typename T>
 using vectorize_t = typename vectorize<T>::type;
     
-template <typename T>
-struct is_exec : std::false_type{};
-    
-template <>
-struct is_exec<execution_policy>   : std::true_type{};
-    
-template <>
-struct is_exec<absorption_policy>  : std::true_type{};
-
-template <>
-struct is_exec<serial_execution>   : std::true_type{};
-    
-template <>
-struct is_exec<parallel_execution> : std::true_type{};
+template <typename Check>
+struct is_exec : std::is_base_of<execution_policy, Check>{};
     
 template <typename Exec>
 struct is_strong_exec 
@@ -86,10 +65,10 @@ struct is_weak_exec
 							  std::is_same<Exec, absorption_policy>::value;
 };
 
-
+// MSVC++ variadiac expansion bug work-around
 template <typename T>
 struct exec_extractor
-{
+{ 
 	using type = typename T::exec;
 };
 
@@ -142,25 +121,57 @@ struct compatible_execs
 							  std::is_same<Exec1, Exec2>::value;
 };
 
+template <typename Type, Type x, Type y>
+struct max
+{
+	const static Type value = x > y ? x : y;
+};
+
+template <typename Type, Type x, Type y>
+struct min
+{
+	const static Type value = x < y ? x : y;
+};
+
+// Forward declare is_expression for use in expression_traits
+template <class Check>
+struct is_expression;
+
 } // end namespace detail
 
 namespace expressions {
 
 template <typename T>
-struct expression_traits;
+struct expression_traits
+{
+	static const bool is_operator = false;
+};
 
 // Defines expression_traits for derived specialization Binary
-template <typename L, typename R, class Op, class Exec>
-struct expression_traits<vap::expressions::Binary<L, R, Op, Exec>>
+template <typename L, typename R, class Op, class Exec, bool Is_Operator>
+class expression_traits<vap::expressions::Binary<L, R, Op, Exec, Is_Operator>>
 {
-	using exec				   = typename detail::get_strongest_exec<Exec, typename L::exec, typename R::exec>::type;
-	using value_type		   = typename L::value_type;
+public:
+	static_assert(
+		vap::detail::is_expression<L>::value && vap::detail::is_expression<R>::value,
+		"Binary Traits: Left and Right types must be expressions");
 
+	static_assert(
+		vap::detail::is_exec<Exec>::value,
+		"Binary Traits: Invalid execution policy");
+
+	static const bool is_operator = Is_Operator;
+
+private:
 	using left_iterator		   = typename L::iterator;
 	using left_const_iterator  = typename L::const_iterator;
 
 	using right_iterator	   = typename R::iterator;
 	using right_const_iterator = typename R::const_iterator;
+
+public:
+	using exec		 = typename detail::get_strongest_exec<Exec, typename L::exec, typename R::exec>::type;
+	using value_type = typename L::value_type;
 
 	// Retrieve binary_iterator specialization type for the given execution policy
 	using iterator	= typename iterators
@@ -171,18 +182,32 @@ struct expression_traits<vap::expressions::Binary<L, R, Op, Exec>>
 	using const_iterator = typename iterators
 		  ::binary_iterator<exec>
 		  ::template type<Op, left_const_iterator, right_const_iterator>; 
+
 };
 
 // Defines expression_traits for derived specialization Unary
-template <typename T, class Op, class Exec>
-struct expression_traits<vap::expressions::Unary<T, Op, Exec>>
+template <typename T, class Op, class Exec, bool IsOp>
+class expression_traits<vap::expressions::Unary<T, Op, Exec, IsOp>>
 {
-	using exec				  = typename detail::get_strongest_exec<Exec, typename T::exec>::type;
-	using value_type		  = typename T::value_type;
+public:
+	static_assert(
+		vap::detail::is_expression<T>::value,
+		"Unary Traits: Base type must be an expression");
+
+	static_assert(
+		vap::detail::is_exec<Exec>::value,
+		"Unary Traits: Invalid execution policy");
+
+	static const bool is_operator = IsOp;
+
+private:
 	using base_iterator		  = typename T::iterator;
 	using const_base_iterator = typename T::const_iterator;
-	
-	// Retrieve unary_iterator specialization type for the given execution policy
+
+public:
+	using exec				  = typename detail::get_strongest_exec<Exec, typename T::exec>::type;
+	using value_type		  = typename T::value_type;
+
 	using iterator = typename iterators
 		  ::unary_iterator<exec>
 		  ::template type<Op, base_iterator>;
@@ -197,9 +222,15 @@ struct expression_traits<vap::expressions::Unary<T, Op, Exec>>
 template <typename T>
 struct expression_traits<vap::expressions::Scalar<T>>
 {
-	using exec				  = vap::absorption_policy;
-	using value_type		  = T;
-	
+	static_assert(
+		std::is_arithmetic<T>::value,
+		"Scalar Traits: Scalar type must be an arithmetic type");
+
+	static const bool is_operator = false;
+
+	using exec = vap::absorption_policy;
+	using value_type = T;
+
 	// Retrieve unary_iterator specialization type for the given execution policy
 	using iterator = typename iterators
 		  ::scalar_iterator<exec>
@@ -214,6 +245,16 @@ struct expression_traits<vap::expressions::Scalar<T>>
 template <typename T, class Ctor, typename C, class Exec>
 struct expression_traits<vap::expressions::vector<T, Ctor, C, Exec>>
 {
+	static_assert(
+		std::is_arithmetic<T>::value,
+		"Vector Traits: Scalar type must be an arithmetic type");
+
+	static_assert(
+		vap::detail::is_exec<Exec>::value,
+		"Vector Traits: Invalid execution policy");
+
+	static const bool is_operator = false;
+
 	using value_type	 = T;
 	using exec			 = Exec;
 	using iterator		 = typename C::iterator;
@@ -221,6 +262,19 @@ struct expression_traits<vap::expressions::vector<T, Ctor, C, Exec>>
 };
 
 } // end namespace expressions
+
+namespace detail
+{
+	template <class Check>
+	struct is_expression
+	{
+		static const bool value = std::is_base_of<expressions::Expression<Check::Derived>, Check>::value ||
+												  expressions::expression_traits<Check>::is_operator;
+	};
+
+	template <typename T, template <typename> class Check>
+	struct is_scalar_expression : std::is_same<vap::expressions::Scalar<T>, Check<T>> {};
+}
 
 using detail::is_expression;
 

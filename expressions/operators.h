@@ -13,121 +13,147 @@
 namespace vap		{
 namespace operators {
 
-	/********************************/
-	/** Binary Expression Operators**/
-	/********************************/
+	/*********************************/
+	/** Binary Expression Operators **/
+	/*********************************/
+	// Sum: TEMPLATE PARAMETERS
 	template <typename Left, 
-			  typename Right = Left,
-			  typename Exec_Policy = vap::get_exec<Left, Right >>
-	struct Sum :
-		public expressions::Binary <Left, Right, vap::sum<typename Left::value_type>, Exec_Policy>
+			  typename Right	   = Left,
+			  typename Functor     = vap::apply <vap::sum<typename Left::value_type>>,
+			  typename Exec_Policy = absorption_policy>
+
+	// Sum: CLASS DEFINITION
+	struct Sum : public 
+		expressions::Binary <Left, Right, Functor, Exec_Policy, true>
 	{ Sum(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {} };
 
+	// Difference: TEMPLATE PARAMETERS
 	template <typename Left,
-			  typename Right = Left,
-			  typename Exec_Policy = vap::get_exec<Left, Right >>
-	struct Difference :
-		public expressions::Binary <Left, Right, vap::difference <typename Left::value_type>, Exec_Policy>
-	{
-		Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	};
+			  typename Right	   = Left,
+			  typename Functor     = vap::apply <vap::difference <typename Left::value_type>>,
+			  typename Exec_Policy = absorption_policy>
 
-	template <typename Left,
-			  typename Right = Left,
-			  typename Exec_Policy = vap::get_exec<Left, Right >>
-	struct Product :
-		public expressions::Binary <Left, Right, vap::product <typename Left::value_type>, Exec_Policy>
-	{
-		Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	};
+	// Difference: CLASS DEFINITION
+	struct Difference : public 
+		expressions::Binary <Left, Right, Functor, Exec_Policy, true>
+	{ Difference(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {} };
 
+	// Product: TEMPLATE PARAMETERS
 	template <typename Left,
-			  typename Right = Left,
-			  typename Exec_Policy = vap::get_exec<Left, Right >>
-	struct Quotient :
-		public expressions::Binary <Left, Right, vap::quotient <typename Left::value_type>, Exec_Policy>
-	{
-		Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	};
+			  typename Right	   = Left,
+			  typename Functor     = vap::apply <vap::product <typename Left::value_type>>,
+			  typename Exec_Policy = absorption_policy>
 
+	// Product: CLASS DEFINITION
+	struct Product : public 
+		expressions::Binary <Left, Right, Functor, Exec_Policy, true>
+	{ Product(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {} };
+
+	// Quotient: TEMPLATE PARAMETERS
 	template <typename Left,
-			  typename Right = Left,
-			  typename Exec_Policy = vap::get_exec<Left, Right>>
-	struct Power :
-		public expressions::Binary <Left, Right, vap::power <typename Left::value_type>, Exec_Policy>
-	{
-		Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {}
-	};
+			  typename Right	   = Left,
+			  typename Functor	   = vap::apply <vap::quotient <typename Left::value_type>>,
+			  typename Exec_Policy = absorption_policy>
+
+	// Quotient: CLASS DEFINITION
+	struct Quotient : public 
+		expressions::Binary <Left, Right, Functor, Exec_Policy, true>
+	{ Quotient(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {} };
+
+	// Power: TEMPLATE PARAMETERS
+	template <typename Left,
+			  typename Right	   = Left,
+			  typename Functor	   =  vap::apply <vap::power<typename Left::value_type>>,
+			  typename Exec_Policy = absorption_policy>
+
+	// Power: CLASS DEFINITION
+	struct Power : public 
+		expressions::Binary <Left, Right, Functor, Exec_Policy, true>
+	{ Power(const Left& lhs, const Right& rhs) : Binary(lhs, rhs) {} };
 
 	/********************************/
 	/** Unary Expression Operators **/
 	/********************************/
+	// Sin: TEMPLATE PARAMETERS
+	template <typename Type,
+			  typename Functor	   = vap::sin <typename Type::value_type>,
+			  typename Exec_Policy = absorption_policy>
 
-	template <typename Type, 
-			  typename Exec_Policy = vap::get_exec<Type>>
-	struct Sin :
-		public expressions::Unary <Type, vap::sin <typename Type::value_type>, Exec_Policy>
+	// Sin: CLASS DEFINITION
+	struct Sin : public 
+		expressions::Unary <Type, Functor, Exec_Policy, true>
 	{ Sin(const Type& value) : Unary(value) {} };
 	
+	// Cos TEMPLATE PARAMETERS
 	template <typename Type,
-			  typename Exec_Policy = vap::get_exec<Type>>
-	struct Cos :
-		public expressions::Unary <Type, vap::cos <typename Type::value_type>, Exec_Policy>
+			  typename Functor	   = vap::cos <typename Type::value_type>,
+			  typename Exec_Policy = absorption_policy>
+
+	// Cos: CLASS DEFINITION
+	struct Cos : public 
+		expressions::Unary <Type, Functor, Exec_Policy, true>
 	{ Cos(const Type& value) : Unary(value) {} };
 	
-	template <typename Type, 
-			  typename Exec_Policy = vap::get_exec<Type>>
-	struct Tan :
-		public expressions::Unary <Type, vap::tan <typename Type::value_type>, Exec_Policy>
+	// Tan: TEMPLATE PARAMETERS
+	template <typename Type,
+			  typename Functor	   = vap::tan <typename Type::value_type>,
+			  typename Exec_Policy = absorption_policy>
+
+	// Tan: CLASS DEFINITION
+	struct Tan : public 
+		expressions::Unary <Type, Functor, Exec_Policy, true>
 	{ Tan(const Type& value) : Unary(value) {} };
 	
-	template <typename Type, 
-			  typename Exec_Policy = vap::get_exec<Type>>
-	struct Log :
-		public expressions::Unary <Type, vap::log <typename Type::value_type>, Exec_Policy>
+	// Log: TEMPLATE PARAMETERS
+	template <typename Type,
+			  typename Functor	   = vap::log <typename Type::value_type>,
+			  typename Exec_Policy = absorption_policy>
+
+	// Log: CLASS DEFINITION
+	struct Log : public 
+		expressions::Unary <Type, Functor, Exec_Policy, true>
 	{ Log(const Type& value) : Unary(value) {} };
 	
-	template <typename Type, 
-			  typename Exec_Policy = vap::get_exec<Type>>
-	struct Negate :
-		public expressions::Unary <Type, vap::negate <typename Type::value_type>, Exec_Policy>
+	// Negate: TEMPLATE PARAMETERS
+	template <typename Type,
+			  typename Functor	   = vap::negate <typename Type::value_type>,
+			  typename Exec_Policy = absorption_policy>
+
+	// Negate: CLASS DEFINITION
+	struct Negate : public 
+		expressions::Unary <Type, Functor, Exec_Policy, true>
 	{ Negate(const Type& value) : Unary(value) {} };
 
 	/*******************************/
 	/** Binary Operator Overloads **/
 	/*******************************/
 	template <typename Left, typename Right,
-			  typename Left_Exp  = vap::vectorize_t<Left>,
-			  typename Right_Exp = vap::vectorize_t<Right>,
-			  typename Return    = Sum<Left_Exp, Right_Exp>>
+			  typename Return = Sum<vap::vectorize_t<Left>, 
+									vap::vectorize_t<Right>>>
 	const Return operator + (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 	
 	template <typename Left, typename Right, 
-			  typename Left_Exp  = vap::vectorize_t<Left>,
-			  typename Right_Exp = vap::vectorize_t<Right>,
-			  typename Return    = Difference<Left_Exp, Right_Exp>>
+			  typename Return = Difference<vap::vectorize_t<Left>, 
+										   vap::vectorize_t<Right>>>
 	const Return operator - (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 	
 	template <typename Left, typename Right, 
-			  typename Left_Exp  = vap::vectorize_t<Left>,
-			  typename Right_Exp = vap::vectorize_t<Right>,
-			  typename Return    = Product<Left_Exp, Right_Exp>>
+			  typename Return = Product<vap::vectorize_t<Left>, 
+										vap::vectorize_t<Right>>>
 	const Return operator * (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 	
 	template <typename Left, typename Right, 
-			  typename Left_Exp  = vap::vectorize_t<Left>,
-			  typename Right_Exp = vap::vectorize_t<Right>,
-			  typename Return    = Quotient<Left_Exp, Right_Exp>>
+			  typename Return = Quotient<vap::vectorize_t<Left>, 
+										 vap::vectorize_t<Right>>>
 	const Return operator / (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 	
 	template <typename Left, typename Right, 
-			  typename Left_Exp  = vap::vectorize_t<Left>,
-			  typename Right_Exp = vap::vectorize_t<Right>,
-			  typename Return    = Power<Left_Exp, Right_Exp>>
+			  typename Return = Power<vap::vectorize_t<Left>, 
+									  vap::vectorize_t<Right>>>
 	const Return operator ^ (const Left& lhs, const Right& rhs)
 	{ return Return(lhs, rhs); }
 
