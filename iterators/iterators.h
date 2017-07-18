@@ -69,7 +69,7 @@ template <>
 struct scalar_iterator <absorption_policy>
 {
 	template <typename Type>
-	using type = thrust::constant_iterator<Type>;
+	using type = thrust::constant_iterator<Type, std::size_t>;
 };
 
 #else 

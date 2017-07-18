@@ -128,10 +128,14 @@ namespace operators {
 	/** Binary Operator Overloads **/
 	/*******************************/
 	template <typename Left, typename Right,
-			  typename Return = Sum<vap::vectorize_t<Left>, 
-									vap::vectorize_t<Right>>>
+			  typename LeftV  = vap::vectorize_t<Left>,
+			  typename RightV = vap::vectorize_t<Right>,
+			  typename Return = Sum<LeftV, RightV>>
 	const Return operator + (const Left& lhs, const Right& rhs)
-	{ return Return(lhs, rhs); }
+	{ 
+		return Return(vap::wrap_number<LeftV>(lhs, rhs), 
+					  vap::wrap_number<RightV>(rhs, lhs)); 
+	}
 	
 	template <typename Left, typename Right, 
 			  typename Return = Difference<vap::vectorize_t<Left>, 

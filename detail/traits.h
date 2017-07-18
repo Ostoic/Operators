@@ -9,19 +9,19 @@ namespace vap		  {
 namespace expressions {
 
 // Forward declare all expression-derived classes.
-template <class D>
+template <class>
 class Expression;
 
-template <typename L, typename R, class Op, class Exec, bool IsOp>
+template <typename, typename, class, class, bool>
 class Binary;
 
-template <typename Base, class Op, class Exec, bool IsOp>
+template <typename, class, class, bool>
 class Unary;
 
-template <typename Type>
+template <typename>
 class Scalar;
 
-template <typename Type, typename Ctor, typename C, typename P>
+template <typename, typename, typename, typename>
 class vector;
 
 } // end namespace expressions
@@ -47,7 +47,41 @@ using vectorize = std::conditional<std::is_arithmetic<T>::value,
     
 template <typename T>
 using vectorize_t = typename vectorize<T>::type;
-    
+
+// General case: To is not a number type
+// Behaviour: The wrapper acts as the identity function
+template <typename To>
+class wrap_number
+{
+public:
+	template <typename Other>
+	wrap_number(const To& lhs, const Other& rhs) : wrapper(lhs) {}
+
+	operator const To& () const
+	{ return this->wrapper; }
+
+private:
+	const To& wrapper;
+};
+
+// Scalar<T> case: To is a number type
+// Behaviour: The number lhs is wrapped in Scalar<T> with the correct dimensions
+template <typename T>
+class wrap_number <expressions::Scalar<T>>
+{
+public:
+	using To = expressions::Scalar<T>;
+
+	template <typename Other>
+	wrap_number(const T& lhs, const Other& rhs) : wrapper(lhs, rhs.size()) {}
+
+	operator To () const
+	{ return this->wrapper; }
+
+private:
+	To wrapper;
+};
+
 template <typename Check>
 struct is_exec : std::is_base_of<execution_policy, Check>{};
     
@@ -273,13 +307,16 @@ namespace detail
 	};
 
 	template <typename T, template <typename> class Check>
-	struct is_scalar_expression : std::is_same<vap::expressions::Scalar<T>, Check<T>> {};
+	using is_scalar_expression = std::is_same<vap::expressions::Scalar<T>, Check<T>>;
 }
 
 using detail::is_expression;
+using detail::is_scalar_expression;
 
 using detail::vectorize;
 using detail::vectorize_t;
+
+using detail::wrap_number;
     
 using detail::get_exec;
 using detail::get_strongest_exec;

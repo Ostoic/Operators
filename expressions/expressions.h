@@ -78,7 +78,8 @@ public:
 			vap::compatible_execs<typename Left::exec, typename Right::exec>::value,
 			"Binary: Incompatible execution policies selected");
 
-		//assert(left.size() == right.size()); 
+		//if (right.size() > left.size()) left.update(right.size());
+		assert(left.size() == right.size()); 
 	}
 
 	iterator begin() 
@@ -143,7 +144,10 @@ public:
 			"Unary: Base type must be an expression");
 	}
 
-	iterator begin() 
+	// Empty functor
+	void update(const std::size_t&) {}
+
+	iterator begin()
 	{ return make_transform_iterator(expression.begin(), apply); }
 
 	iterator end() 
@@ -167,10 +171,10 @@ class Scalar :
 protected:
 	// This MUST be a by-value variable. Otherwise rvalues
 	// will be invalidated when this class goes out of scope.
-	Type value;
+	value_type value;
+	std::size_t m_size;
 
-public:
-	Scalar(const Type& val) : value(val) 
+	void requirements() 
 	{
 		// Assert that the scalar type must be an arithmetic type
 		static_assert (
@@ -178,19 +182,27 @@ public:
 			"Scalar: Scalar type must be an arithmetic type");
 	}
 
+public:
+	Scalar(const Type& val) : value(val), m_size(0)
+	{ requirements(); }
+
+	template <typename E>
+	Scalar(const Type& val, const std::size_t size) : value(val), m_size(size) 
+	{ requirements(); }
+
 	iterator begin() 
-	{ return thrust::make_constant_iterator(value); }
+	{ return thrust::constant_iterator<value_type, std::size_t>(value, 0); }
 
 	iterator end() 
-	{ return thrust::make_constant_iterator(value); }
+	{ return thrust::constant_iterator<value_type, std::size_t>(value, m_size); }
 
 	const_iterator cbegin() const
-	{ return thrust::make_constant_iterator(value); }
+	{ return thrust::constant_iterator<value_type, std::size_t>(value, 0); }
 
 	const_iterator cend()   const
-	{ return thrust::make_constant_iterator(value); }
+	{ return thrust::constant_iterator<value_type, std::size_t>(value, m_size); }
 
-	std::size_t size()					   const { return 1; }
+	std::size_t size()					   const { return m_size; }
 	value_type operator [] (std::size_t i) const { return value; }
 };
 	

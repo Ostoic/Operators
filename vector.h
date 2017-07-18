@@ -35,6 +35,9 @@ protected:
 	Container elements;
 
 public:
+	// Empty functor
+	void update(const std::size_t&) {}
+
 	iterator begin() { return elements.begin(); }
 	iterator end()	 { return elements.end(); }
 
